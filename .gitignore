@@ -2,6 +2,9 @@ node_modules/
 dist/
 *.log
 
+# a local run's SQLite file (DATA_DIR overrides /data for dev)
+/data/
+
 # editor and OS junk
 .DS_Store
 ._*
