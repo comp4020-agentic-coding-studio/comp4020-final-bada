@@ -10,6 +10,13 @@ const MAX_NAME = 40;
 const MAX_BODY = 280;
 const MAX_REQUEST_BYTES = 8192;
 
+// `.trim()` only strips whitespace (Unicode `Zs`), not zero-width/format
+// characters (`Cf`, e.g. U+200B) — a string made of nothing else survives
+// `.trim()` non-empty and reads as blank on the wall.
+function hasVisibleContent(s: string): boolean {
+  return /[^\s\p{Cf}]/u.test(s);
+}
+
 async function readBody(req: IncomingMessage): Promise<string> {
   const chunks: Buffer[] = [];
   let size = 0;
@@ -63,7 +70,7 @@ const server = createServer((req, res) => {
         const params = new URLSearchParams(raw);
         const name = (params.get("name") ?? "").trim().slice(0, MAX_NAME);
         const body = (params.get("body") ?? "").trim().slice(0, MAX_BODY);
-        if (name && body) {
+        if (hasVisibleContent(name) && hasVisibleContent(body)) {
           insertMark(visitorId, name, body);
           setCookie(res, "name", name);
         }

@@ -32,6 +32,20 @@ it("rejects a mark with an empty body without storing it", async () => {
   expect(await res.text()).not.toContain(marker);
 });
 
+it("rejects a name made only of zero-width characters", async () => {
+  const marker = `zwsp-${randomUUID()}`;
+  await postMark("​​​", marker);
+  const res = await fetch(new URL("/", baseUrl));
+  expect(await res.text()).not.toContain(marker);
+});
+
+it("accepts a name that merely contains a zero-width character", async () => {
+  const marker = `zwsp-ok-${randomUUID()}`;
+  await postMark(`Jo​hn`, marker);
+  const res = await fetch(new URL("/", baseUrl));
+  expect(await res.text()).toContain(marker);
+});
+
 it("issues a fresh visitor cookie per anonymous request", async () => {
   const a = await postMark("A", `a-${randomUUID()}`);
   const b = await postMark("B", `b-${randomUUID()}`);
