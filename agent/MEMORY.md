@@ -2166,3 +2166,18 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   in `comp4020-final-bada` week 9. Worth defaulting to this combination for
   any future from-scratch Node deliverable on this course's Fly template
   before reaching for `better-sqlite3` again.
+- This sandbox's shell is zsh, and zsh arrays are 1-indexed by default ---
+  a `for i in $(seq 1 N)` loop generating test POST bodies with
+  `${names[$((RANDOM % ${#names[@]}))]}` (correct bash, 0-indexed) silently
+  produced an empty name on every draw of index 0 in zsh, since
+  `${names[0]}` is unset --- no error, just a request with an empty `name`
+  field that the app then correctly rejected, so the failure showed up as a
+  mysteriously smaller row count in the database than requests sent, not as
+  a shell error. Confirmed on `comp4020-final-bada` week 9 generating 50
+  synthetic posts to stress-test a wall UI at volume: 4 of 50 draws came up
+  empty. Fix: either index from 1 in any array-literal test-data loop in
+  this environment, or avoid the ambiguity entirely with a plain
+  space-separated string and `set --`/positional-parameter cycling. Worth
+  checking any future ad-hoc data-generation loop's actual output count
+  against the expected count before trusting "N requests sent" means "N
+  rows landed," especially before concluding a discrepancy is an app bug.

@@ -1,72 +1,54 @@
 # now
 
-## State as of this run (2026-09-30, ~165.5 h to cutoff, `comp4020-final-bada`) --- FIRST run of a new deliverable
+## State as of this run (2026-09-30, ~159.5 h to cutoff, `comp4020-final-bada`)
 
-This is the final project's opening crit, "It's alive!" (crit 8, week 9),
-in a fresh repo that will carry the whole final project across crits 8, 9,
-10 and the final submission itself (due 2026-11-09) --- not a single-crit
-throwaway like every prior deliverable in this file. `memory/now.md`'s
-previous content was `comp4020-crit7-bada`'s finishing hand-off, unrelated
-to this repo; ignore it from here on, it's fully superseded.
+Re-opened for crit 8 ("It's alive!") with the deliverable already fully
+built, deployed and verified by the previous run --- app, README, PROCESS.md,
+`reflections/crit-8.md` all in place, live at
+`https://comp4020-final-bada.fly.dev/`, working tree clean. Re-fetched crit
+8's source fresh: unchanged from the previous fetch, confirmed every spec
+bullet is still met (deployed, one real interaction with a persisting trace,
+README's first take on "good" published at `/readme/`, process/reflection
+in the repo, cited commits all resolve).
 
-Read crit 8's source fresh (unchanged from the fetch this run) and the final
-project brief in full (via WebFetch summary, since the tool wouldn't quote
-verbatim). Crit 8's bar is narrow: deployed, one real interaction, a trace
-that persists, and a first version of what good means in README.md ---
-real-time (crit 9) and logging (crit 11) are explicitly out of scope this
-week.
+Not a finishing run (159.5h ≈ the full week), so this run's job was the
+"deepen" the last hand-off pointed at: exercise the wall with real content
+and volume, since every prior check had only ever seen the empty state. Ran
+the app locally (`DATA_DIR=/tmp/... PORT=8080 node src/server.ts` ---
+never against the real `/data` on this machine, which is an unrelated
+shared directory), posted a handful of realistic named marks and
+screenshotted both marking viewports, then pushed to volume: 96 marks
+(~10,500px of page, no pagination) including one near the 280-char body
+limit. Everything held: newest-first ordering, `pre-wrap` body wrapping, the
+"yours" badge logic, no layout breaks, no crash --- the README's "reading top
+to bottom is the whole interface" bet is holding at real volume, not just in
+the empty state. `pnpm check` (typecheck + 5 vitest tests) passed against
+the running local instance. No app bug found, so no code change --- a
+genuine clean result, not a rubber stamp, since the long-body case
+specifically could have broken wrapping and didn't. Cleaned up every local
+server, temp DB and screenshot afterwards; confirmed no process still
+listening. Working tree is still clean --- nothing to commit this run.
 
-Built **Marks**: a shared noticeboard (name + short line, posted, visible
-immediately, still there on return). No accounts --- a random id in a
-cookie distinguishes visitors and marks a post "yours." Marks are permanent
-(no edit/delete), a deliberate call, not a gap. README.md argues this from
-two real sources read this run: Robin Sloan's home-cooked-app essay and Ink
-& Switch's malleable-software essay, both genuinely fetched and checked
-against the brief's own "small web / games for friends / tools for one
-workshop" pointer, not assumed. CLAUDE.md turns that argument into rules
-(no auth, escape user text, don't build ahead of the open crit, keep deps
-minimal).
+One test-harness gotcha hit and recorded in `MEMORY.md`: a bash-style
+`${names[$((RANDOM % ...))]}` array-index loop silently drew empty names in
+this zsh sandbox (zsh arrays are 1-indexed), which looked briefly like a
+server bug (fewer rows landed than requests sent) until traced to the shell,
+not the app.
 
-Stack: Node 24's native TypeScript execution (no build step) +
-`node:sqlite` (built into Node 24, no native addon --- see MEMORY.md).
-Verified for real before deploying: `pnpm check` (5/5) against a locally
-run instance; a real `docker build` + `docker run` + `docker restart`
-proving a mark survives a container restart (the actual guarantee the Fly
-volume is meant to provide); a real-browser keyboard-only walk of the whole
-form (Tab through link → name → mark → submit, Enter submits) at desktop
-and 390×844; `/readme/`'s headings render correctly in order.
-
-Committed in three logical pieces (app, docs, process/reflection --- see
-`git log`), pushed, and deployed
-(`flyctl deploy --remote-only --ha=false -a comp4020-final-bada`). Verified
-the *live* URL after deploying: `https://comp4020-final-bada.fly.dev/` and
-`/readme/` both 200, a live screenshot matches the local one, and (since
-this app has no delete) deliberately left zero test marks on the live
-instance --- it reads "No marks yet" on the real deployment, same
-discipline as prior no-delete apps in this file.
-
-Wrote `reflections/crit-8.md` (headed "It's alive!", the source's title,
-280 words) and a first-draft `PROCESS.md` (~380 words, citing the app and
-docs commits) --- both intentionally not at their final-submission length
-yet (README's final target is 400--600 words, already at 426; PROCESS.md's
-final target is 900--1100, this is a first pass, to be rewritten not
-appended as the project grows, per doctrine).
+Live URL re-verified at the end of this run: `/` and `/readme/` both still
+200, unchanged (no code touched, nothing to redeploy).
 
 ## Single most important next action
 
-This was NOT called a finishing run (165.5h ≈ the full week), so the
-finishing-steps checklist doesn't fully apply yet --- but everything crit
-8's own spec asks for is already in place and deployed ahead of its
-cutoff. If a future prompt reopens this repo before crit 8's cutoff:
-deepen or leave as-is (it already satisfies every crit-8 spec bullet); the
-obvious next layer, if there's a reason to touch it again before crit 8
-closes, is exercising the wall with a few real posts to see if the "reading
-top to bottom is the whole interface" bet in README still holds once
-there's real content, not just an empty state. If the prompt instead opens
-crit 9 ("All at Once" or similarly named) or a later crit/final-submission
-prompt: that's real-time + one documented multi-user behaviour decision ---
-build it as a genuine addition on top of Marks, not a rewrite; the schema
-(one `marks` table, cookie-based `visitor_id`) was deliberately left small
-enough to add an SSE broadcast to without restructuring it. Re-fetch
-whatever course-source URL that prompt names fresh rather than assuming
-continuity from crit 8's.
+Crit 8's bar is still fully met and deployed; there was nothing left to
+build for it this run, only to verify. If a future prompt reopens this repo
+still under crit 8's own source: there's not much left to deepen --- the
+wall's been checked empty and at volume, both viewports, keyboard-only, a
+real container restart, and the two philosophical sources are already
+argued in README.md. If the prompt instead opens crit 9 ("All at Once" or
+similarly named) or a later crit/final-submission prompt: that's real-time
++ one documented multi-user behaviour decision --- build it as a genuine
+addition on top of Marks (the schema, one `marks` table with a cookie
+`visitor_id`, was deliberately left small enough for an SSE broadcast
+without restructuring), not a rewrite. Re-fetch whatever course-source URL
+that prompt names fresh rather than assuming continuity from crit 8's.
