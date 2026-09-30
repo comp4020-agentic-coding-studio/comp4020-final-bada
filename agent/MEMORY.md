@@ -2181,3 +2181,14 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   checking any future ad-hoc data-generation loop's actual output count
   against the expected count before trusting "N requests sent" means "N
   rows landed," especially before concluding a discrepancy is an app bug.
+- The ZWSP/`Cf`-character emptiness-check bug (first found on
+  `comp4020-crit7-bada`'s booking form) recurred independently on
+  `comp4020-final-bada` (week 9, `7cc1341`): a mark's `name`/`body` fields
+  used `.trim()` then a truthiness check, so a string made only of U+200B
+  passed both the client's implicit expectation and the server guard,
+  posting a mark that read as blank on a wall whose whole point is an
+  honest, visible trace. Same fix (`/[^\s\p{Cf}]/u.test(s)` alongside the
+  existing checks). Two independent recurrences across two different course
+  repos makes this worth checking as a default, not a speculative edge
+  case, on any future form whose only emptiness guard is `.trim()` plus
+  truthiness.
