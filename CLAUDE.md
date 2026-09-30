@@ -1,10 +1,27 @@
-# Your harness
+# Marks
 
-This file is yours, and it arrives empty on purpose. The rules you hold the
-agent to are part of what gets marked, so they should be rules you decided on.
+Rules for working on this app, derived from what README.md argues "good"
+means for it. If a change would break one of these, the README needs to
+change first --- not the other way around.
 
-Nothing about the template is recorded here. What the repo ships is explained
-where it lives --- `fly.toml`, the `Dockerfile`, the CI workflow and
-`spec/README.md` each say what they fix --- and the course website publishes the
-[final project brief](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/assessments/final-project/).
-What the agent needs to carry from any of it is your call.
+- No accounts. Identity is a random id in a first-party cookie, issued on
+  first visit. Never add passwords, email, or OAuth --- this app only needs
+  to tell two visitors apart, not verify who they are.
+- Marks are permanent once posted: no edit, no delete. That's a deliberate
+  scope decision (README explains why), not a gap to quietly fill in.
+- Escape every piece of user-submitted text before it reaches HTML
+  (`escapeHtml` in `src/render.ts`). Never string-interpolate a name or a
+  mark's body straight into a template.
+- Server-rendered HTML is the interface. The core interaction (post a mark,
+  see the wall) has to work with JavaScript off; anything JS adds is
+  enhancement, never a requirement.
+- One SQLite file on the Fly volume (`node:sqlite`, no native dependency,
+  no separate database service) is the only storage. Don't reach for a
+  second store or an ORM for a schema this small.
+- Build to the crit that's currently open, not ahead of it: real-time
+  updates are crit 9's bar, server-side logging is crit 11's. Land them when
+  their crit opens, not preemptively --- a feature built early is one more
+  thing to keep correct while the next crit's actual bar goes unaddressed.
+- Keep dependencies to what's load-bearing. `marked` renders README.md at
+  `/readme/`, correctly, without hand-rolling markdown parsing; anything
+  else new needs the same justification.
