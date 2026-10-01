@@ -35,6 +35,7 @@ function homePage(marks: ReturnType<typeof listMarks>, visitorId: string, lastNa
   <h1>Marks</h1>
   <p>Leave a short mark. It'll still be here when you're back — <a href="/readme/">what this is for</a>.</p>
 </header>
+<main>
 <form method="post" action="/">
   <p>
     <label for="name">Your name</label>
@@ -46,7 +47,6 @@ function homePage(marks: ReturnType<typeof listMarks>, visitorId: string, lastNa
   </p>
   <button type="submit">Leave it</button>
 </form>
-<main>
 ${marksList(marks, visitorId)}
 </main>`,
   );
