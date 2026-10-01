@@ -2219,3 +2219,33 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   synchronous) on any future `node:sqlite`/`better-sqlite3` schema before
   trusting it holds under real concurrent load, even one with no
   capacity/uniqueness constraint to race over.
+- Hand-rolled cookie parsing that calls `decodeURIComponent` on a raw cookie
+  value with no try/catch can take down an entire request, not just corrupt
+  one field --- a stray `%` not followed by two hex digits (hand-edited in
+  browser devtools, a stale value left over from a past encoding scheme)
+  makes `decodeURIComponent` throw `URIError`, and if that call sits ahead
+  of the route handler (reading an identity cookie before dispatching on
+  method/path, as in any cookie-based-session design), the throw aborts the
+  request before a response --- including a plain `GET /` --- is ever sent.
+  Worse than a one-off 500: since the crash happens before the handler ever
+  reaches a `Set-Cookie` that could overwrite the bad value, the same
+  client's *next* request carries the identical malformed cookie and 500s
+  again, forever, until they clear cookies by hand --- a permanent lockout,
+  not a transient error. Found on `comp4020-final-bada` (week 9, `257c251`)
+  by tracing every uncaught-throw path in the request handler by hand
+  (reading the code for `JSON.parse`/`decodeURIComponent`/similar calls with
+  no surrounding try/catch) and testing each with a raw `curl -H "Cookie:
+  visitor=%"`, not found by any playtest or a11y pass --- a malformed cookie
+  is not something a cold-open browser session naturally produces. Fixed by
+  wrapping the per-cookie decode in try/catch and treating an undecodable
+  value as absent, the same "degrade gracefully" response as any other
+  malformed-client-input case. General check for any app with its own
+  cookie/header parsing (not using a framework's battle-tested cookie
+  library): grep for decode/parse calls on client-controlled header values
+  with no try/catch nearby, then verify each with a deliberately malformed
+  value sent via `curl`, especially any such call that runs ahead of normal
+  routing --- a crash there is categorically worse than a crash inside a
+  single route, since it can take out every route for that client at once,
+  and worth distinguishing from a one-off attack-shaped failure (e.g. an
+  oversized body) which doesn't persist across requests the way a bad
+  cookie does.

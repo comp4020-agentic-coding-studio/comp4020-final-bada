@@ -1,54 +1,60 @@
 # now
 
-## State as of this run (2026-10-01, ~141.5 h to cutoff, `comp4020-final-bada`)
+## State as of this run (2026-10-01, ~135.5 h to cutoff, `comp4020-final-bada`)
 
 Re-opened still under crit 8's source (`08-its-alive.json`, re-fetched and
-byte-identical to all prior fetches). Working tree was clean, app already
-deployed and meeting crit 8's bar per the last three runs' checks (empty
-state, volume, both viewports, keyboard-only, container restart, ZWSP
-emptiness guard).
+byte-identical again). Working tree was clean, app already deployed and
+meeting crit 8's bar per the last four runs' checks (empty state, volume,
+both viewports, keyboard-only, container restart, ZWSP guard, landmark
+containment, concurrent-write integrity).
 
-Followed the prior hand-off's two suggested fresh angles, both genuinely
-checked rather than assumed:
+Re-read README.md's claims against the current schema/server (`db.ts`,
+`server.ts`, `render.ts`, `cookies.ts`) line by line --- still accurate, no
+drift. Then tried a genuinely new angle instead of repeating a prior check:
+traced every uncaught-throw path in the request handler by hand and tested
+each one against a locally running server (`DATA_DIR` override, no volume
+needed).
 
-1. **Real-browser axe-core pass** (not yet run on this repo): found one real,
-   moderate violation on the home page --- the posting `<form>` sat between
-   `<header>` and `<main>`, so its two fields weren't contained by any
-   landmark region (`region` rule). `/readme/` was already clean. Fixed by
-   moving the form inside `<main>`, next to the wall it posts to
-   (`defaffb`) --- one line changed. Re-scanned locally (0 violations) and
-   again against production after deploying (0 violations).
-2. **Concurrent-POST integrity check**: fired 40 concurrent POSTs at a local
-   server with `Promise.all`, then queried the sqlite file directly (not
-   just the rendered page) --- all 40 landed, ids contiguous 1--44 with no
-   duplicates or gaps. Confirms `node:sqlite`'s synchronous `DatabaseSync`
-   with no `await` inside `insertMark` serialises concurrent writes cleanly,
-   same reasoning as the `better-sqlite3`/`Promise.all` race lesson in
-   `MEMORY.md` adapted to a schema with no capacity/uniqueness constraint to
-   race over. No code change --- a genuine checked-clean result.
+Found one real bug: `cookies.ts`'s `parseCookies` called
+`decodeURIComponent` on every cookie value with no guard. A cookie value
+with a stray `%` not followed by two hex digits (hand-edited in devtools, a
+stale value from a past encoding) throws `URIError`, uncaught, 500ing
+**every** request from that client --- including a plain `GET /` --- with no
+way to recover short of manually clearing cookies, since the crash happens
+before the handler ever reaches a `Set-Cookie` that could fix it. This
+directly threatens the crit 8 bar itself ("a stranger can visit, do the
+core thing") for any client that ever ends up with a malformed cookie.
+Fixed by wrapping the per-cookie `decodeURIComponent` call in try/catch and
+treating a malformed value as absent (`257c251`), with a regression test
+added to `spec/marks.test.ts`. Verified against a restarted local server
+(malformed cookie → 200, was 500) and again against production after
+deploying (`malformed cookie against prod: 200`).
+
+Checked one other throw path while there, and decided it needs no fix: an
+oversized POST body (`MAX_REQUEST_BYTES`, 8192) still 500s, but that's a
+one-off failure against an attack-shaped request (legitimate field lengths
+never get close to the limit), not a persistent lockout like the cookie bug
+was --- the next normal request from the same client works fine.
 
 Deployed (`flyctl deploy --remote-only --ha=false -a comp4020-final-bada`),
-pushed to origin (`defaffb`), live URL re-confirmed 200 on `/` and `/readme/`
-and 0 axe violations against production itself, not just the local build.
+pushed to origin (`257c251`), live URL re-confirmed 200 on `/` and
+`/readme/`.
 
 ## Single most important next action
 
-Crit 8's bar remains fully met, now with two bugs found and fixed across
-three deepen runs (ZWSP guard, landmark containment) plus two genuine
-checked-clean results (concurrent writes, and this run's own account). If a
-future run reopens this repo still under crit 8's source: the proven cheap
-checks (empty, volume, viewports, keyboard, restart, ZWSP, a11y, concurrency)
-are now all done --- worth trying something not yet covered, e.g. a
-`network route --abort` slow-connection check on the home page (does it
-degrade gracefully with JS blocked --- this app has no client JS at all per
-README's own "works with JavaScript off" rule, so this check might just
-confirm that rather than find anything), or re-reading README.md's claims
-against the current schema/server one more time before the next real
-milestone. If the prompt instead opens crit 9 or later: that's real-time +
-one documented multi-user behaviour decision --- build it as a genuine
-addition on top of Marks (the schema was deliberately left small enough for
-an SSE broadcast without restructuring), not a rewrite, and fold this run's
-and the prior three runs' fixes into `PROCESS.md`'s account rather than
-leaving them implicit in the commit log alone. Re-fetch whatever
-course-source URL that prompt names fresh rather than assuming continuity
-from crit 8's.
+Crit 8's bar remains fully met, now with three bugs found and fixed across
+four deepen runs (ZWSP guard, landmark containment, malformed-cookie crash)
+plus checked-clean results (concurrent writes, oversized-body path, README
+accuracy). If a future run reopens this repo still under crit 8's source:
+most cheap checks are now done --- worth trying a blind source-inaccessible
+subagent cold-open pass next (not yet done on this specific repo, per
+`MEMORY.md`'s standing technique for crit-4/5/7), or auditing `render.ts`'s
+`page()`/`marksList()` output directly in a real browser with axe-core
+re-run after any future markup change. If the prompt instead opens crit 9 or
+later: that's real-time + one documented multi-user behaviour decision ---
+build it as a genuine addition on top of Marks (the schema was deliberately
+left small enough for an SSE broadcast without restructuring), not a
+rewrite, and fold this run's and the prior runs' fixes into `PROCESS.md`'s
+account rather than leaving them implicit in the commit log alone.
+Re-fetch whatever course-source URL that prompt names fresh rather than
+assuming continuity from crit 8's.
