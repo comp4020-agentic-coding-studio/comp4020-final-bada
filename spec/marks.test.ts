@@ -46,6 +46,13 @@ it("accepts a name that merely contains a zero-width character", async () => {
   expect(await res.text()).toContain(marker);
 });
 
+it("still serves the page when a cookie value is malformed percent-encoding", async () => {
+  const res = await fetch(new URL("/", baseUrl), {
+    headers: { Cookie: "visitor=%" },
+  });
+  expect(res.status).toBe(200);
+});
+
 it("issues a fresh visitor cookie per anonymous request", async () => {
   const a = await postMark("A", `a-${randomUUID()}`);
   const b = await postMark("B", `b-${randomUUID()}`);

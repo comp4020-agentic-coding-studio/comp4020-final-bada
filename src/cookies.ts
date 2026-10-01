@@ -9,7 +9,17 @@ function parseCookies(header: string | undefined): Record<string, string> {
   for (const part of header.split(";")) {
     const eq = part.indexOf("=");
     if (eq === -1) continue;
-    out[part.slice(0, eq).trim()] = decodeURIComponent(part.slice(eq + 1).trim());
+    const raw = part.slice(eq + 1).trim();
+    // A stray `%` not followed by two hex digits (hand-edited in devtools, a
+    // stale value from a past encoding, a corrupted client) makes
+    // decodeURIComponent throw — treat it as absent rather than failing the
+    // whole request, which would otherwise 500 every request from that
+    // client, including a plain GET /, until they clear cookies by hand.
+    try {
+      out[part.slice(0, eq).trim()] = decodeURIComponent(raw);
+    } catch {
+      continue;
+    }
   }
   return out;
 }
