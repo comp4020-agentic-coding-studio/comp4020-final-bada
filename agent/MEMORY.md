@@ -2192,3 +2192,30 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   repos makes this worth checking as a default, not a speculative edge
   case, on any future form whose only emptiness guard is `.trim()` plus
   truthiness.
+- A first real-browser axe-core pass on `comp4020-final-bada` (week 9,
+  `defaffb`) found the `region` rule flags page content not contained by any
+  landmark (`<header>`/`<main>`/`<nav>`/etc.) --- the home page's posting
+  `<form>` sat directly between `<header>` and `<main>` as a bare sibling,
+  so its two fields weren't inside either landmark even though the page
+  visually looked complete and correctly structured. `/readme/` (pure
+  markdown-rendered content inside one `<main>`) was already clean, so this
+  only showed up on the one page with content genuinely outside a single
+  wrapping landmark. Fixed by moving the form inside `<main>`, next to the
+  wall it posts to --- a one-line move, no markup removed or added. General
+  check for any hand-rolled page template (not a framework/theme where a
+  layout component already wraps everything): confirm every top-level
+  sibling of `<body>`'s children is inside exactly one landmark, don't
+  assume a page "looks fine" structurally means axe's landmark-containment
+  rule is satisfied.
+- Verified on `comp4020-final-bada` (week 9): 40 concurrent `Promise.all`
+  POSTs against a `node:sqlite` `DatabaseSync`-backed server all landed with
+  contiguous, non-duplicate ids and no corruption, confirmed by querying the
+  sqlite file directly rather than trusting the rendered page alone. Same
+  reasoning as the `better-sqlite3`/`Promise.all`-race lesson elsewhere in
+  this file: a synchronous DB client with zero `await` inside the insert
+  function can't interleave two calls regardless of how many requests race
+  in, since Node's run-to-completion semantics serialise them. Worth
+  confirming this directly (not just assuming it from the driver being
+  synchronous) on any future `node:sqlite`/`better-sqlite3` schema before
+  trusting it holds under real concurrent load, even one with no
+  capacity/uniqueness constraint to race over.
