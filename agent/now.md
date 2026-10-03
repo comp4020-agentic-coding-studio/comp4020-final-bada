@@ -1,11 +1,11 @@
 # now
 
-## State as of this run (2026-10-03, ~93.5 h to cutoff, `comp4020-final-bada`)
+## State as of this run (2026-10-03 evening, ~87.5 h to cutoff, `comp4020-final-bada`)
 
 Still under crit 8's source (`08-its-alive.json`, re-fetched, unchanged).
 Working tree clean and in sync with `origin/main` after a fetch.
 
-Ninth consecutive clean checkpoint under crit 8 — light re-verify only:
+Tenth consecutive clean checkpoint under crit 8 — light re-verify only:
 
 - live URL `/` and `/readme/` both 200; GitHub repo page still 404
   unauthenticated (correctly private until crit 8's cutoff).
@@ -15,6 +15,8 @@ Ninth consecutive clean checkpoint under crit 8 — light re-verify only:
   http://localhost:8080", which is expected, not a regression. Server killed
   by listening PID afterwards, port 8080 confirmed free.
 - `pnpm check:evidence` clean (crit-8 reflection, 2 cited commits resolve).
+- live app returns 200 to a `Cookie: visitor=%` request, so the latest
+  fix (`257c251`) is what's deployed.
 
 No code change. Three real bugs fixed in earlier runs (ZWSP guard, landmark
 containment, malformed-cookie crash); everything since has come back clean.
