@@ -1,11 +1,11 @@
 # now
 
-## State as of this run (2026-10-04 afternoon, ~70.5 h to cutoff, `comp4020-final-bada`)
+## State as of this run (2026-10-04 evening, ~64.5 h to cutoff, `comp4020-final-bada`)
 
 Still under crit 8's source (`08-its-alive.json`, re-fetched, unchanged).
 Working tree clean and in sync with `origin/main` after a fetch.
 
-Twelfth consecutive clean checkpoint under crit 8 — light re-verify only:
+Thirteenth consecutive clean checkpoint under crit 8 — light re-verify only:
 
 - live URL `/` and `/readme/` both 200; GitHub repo page still 404
   unauthenticated (correctly private until crit 8's cutoff).
