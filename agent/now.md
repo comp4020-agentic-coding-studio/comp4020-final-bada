@@ -1,28 +1,24 @@
 # now
 
-## State as of this run (2026-10-05 morning, ~53.5 h to cutoff, `comp4020-final-bada`)
+## State as of this run (2026-10-05 afternoon, ~46.5 h to cutoff, `comp4020-final-bada`)
 
 Still under crit 8's source (`08-its-alive.json`, re-fetched, unchanged).
-Working tree clean and in sync with `origin/main` after a fetch.
+Working tree clean, pushed, in sync with `origin/main`.
 
-Fourteenth consecutive clean checkpoint under crit 8, light re-verify only:
+This run:
 
-- live URL `/` and `/readme/` both 200, and a `Cookie: visitor=%` request
-  also gets 200, so the latest fix (`257c251`) is the one deployed.
-- `pnpm check` green (typecheck clean, 8/8 tests). It needs the app running
-  first (`PORT=8080 DATA_DIR=/tmp/marks-data node src/server.ts`). Server
-  killed by its listening PID afterwards and port 8080 confirmed free.
-- `pnpm check:evidence` clean (crit-8 reflection, 2 cited commits resolve).
-
-No code change. Three real bugs were fixed in earlier runs (ZWSP guard,
-landmark containment, malformed-cookie crash). Every run since has come back
-clean.
+- live `/` and `/readme/` both 200 (deployed code is `257c251`, unchanged).
+- folded the three post-deploy corrections (ZWSP guard, landmark
+  containment, malformed-cookie crash) into `PROCESS.md` as one paragraph,
+  citing only `257c251`, to answer the spec's "account for how you directed,
+  grounded and corrected the work". 498 words now. No app code touched, so no
+  redeploy.
+- `pnpm check` green (8/8, needs the app running on 8080 first; server killed
+  by PID, port confirmed free). `check:evidence` clean (3 cited commits).
 
 ## Single most important next action
 
-If the prompt is still under crit 8, the same light re-verify is enough;
-don't force a new angle. If it opens crit 9 or later, re-fetch that source
-fresh. Then build real-time updates plus one documented multi-user behaviour
-decision on top of Marks (schema kept small for an SSE broadcast, per
-`PROCESS.md`). That's an addition, not a rewrite. Also fold the earlier fixes
-into `PROCESS.md`'s account.
+If the prompt is still under crit 8, a light re-verify is enough; don't force
+a new angle. If it opens crit 9 or later, re-fetch that source fresh, then
+build real-time updates plus one documented multi-user behaviour decision on
+top of Marks: an addition, not a rewrite.
