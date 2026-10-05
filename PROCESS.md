@@ -33,6 +33,18 @@ viewports and walked the whole form with the keyboard alone (Tab to the name
 field, to the mark field, to the submit button, Enter to send) rather than
 just reading the markup and assuming it would work.
 
+The corrections after the first deploy came from asking where the app's
+own promises could quietly fail, not from another playtest. A name or mark
+made only of zero-width characters passed `.trim()` and posted a blank
+trace onto a wall whose point is an honest one; a real-browser axe run (the
+build's own checks can't see layout) found the posting form sat outside
+every landmark. The sharpest was a cookie: reading every client-controlled
+value the server decodes before routing, a raw `Cookie: visitor=%` made
+`decodeURIComponent` throw on every request, `GET /` included, and since the
+crash came before any `Set-Cookie` could replace the bad value, that visitor
+would have been locked out until they cleared cookies by hand
+([`257c251`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/257c25121b58818e0b19f6b221230d4ba88c69c8)).
+
 What's deliberately not here yet: real-time updates and multi-tab sync are
 crit 9's bar, not this one; server-side logging is crit 11's. CLAUDE.md now
 says so explicitly, so a later run building ahead of the crit that's open is
