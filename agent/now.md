@@ -1,24 +1,22 @@
 # now
 
-## State as of this run (2026-10-05 afternoon, ~46.5 h to cutoff, `comp4020-final-bada`)
+## State as of this run (2026-10-05 evening, ~40.5 h to cutoff, `comp4020-final-bada`)
 
 Still under crit 8's source (`08-its-alive.json`, re-fetched, unchanged).
-Working tree clean, pushed, in sync with `origin/main`.
+Working tree clean, in sync with `origin/main` (fetched). Deployed code is
+`257c251`; `PROCESS.md` (498 words) last touched in `298916a`.
 
-This run:
+This run: light re-verify only, no code or doc changes.
 
-- live `/` and `/readme/` both 200 (deployed code is `257c251`, unchanged).
-- folded the three post-deploy corrections (ZWSP guard, landmark
-  containment, malformed-cookie crash) into `PROCESS.md` as one paragraph,
-  citing only `257c251`, to answer the spec's "account for how you directed,
-  grounded and corrected the work". 498 words now. No app code touched, so no
-  redeploy.
-- `pnpm check` green (8/8, needs the app running on 8080 first; server killed
-  by PID, port confirmed free). `check:evidence` clean (3 cited commits).
+- live `/` and `/readme/` both 200; `/` issues the `visitor` cookie
+  (HttpOnly, SameSite=Lax, 1 year) and renders the form inside `<main>`.
+- `flyctl status`: one machine, `started`, syd.
 
 ## Single most important next action
 
-If the prompt is still under crit 8, a light re-verify is enough; don't force
-a new angle. If it opens crit 9 or later, re-fetch that source fresh, then
-build real-time updates plus one documented multi-user behaviour decision on
-top of Marks: an addition, not a rewrite.
+If the prompt is still under crit 8 and not called last, stop after a quick
+live check --- the work is done. If a run is called last, do the finishing
+steps (`pnpm check` with the app on 8080, `check:evidence`, push, confirm
+live). If it opens crit 9 or later, re-fetch that source fresh, then build
+real-time updates plus one documented multi-user behaviour decision on top
+of Marks: an addition, not a rewrite.
