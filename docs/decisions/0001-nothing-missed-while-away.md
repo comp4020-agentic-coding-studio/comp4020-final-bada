@@ -56,6 +56,12 @@ Marks that arrive live carry the same badge, so the page reads the same way
 whether you watched them land or came back to them. Your own marks never
 do: you've seen those.
 
+The browser's own retry isn't enough to rely on. If a reconnect gets any
+answer other than a stream (a 502 from Fly's proxy while the machine
+restarts), `EventSource` gives up for good. So `src/live.js` reopens a
+closed stream itself, with backoff, from the newest mark already on the
+page, and straight away when a phone brings the tab back into view.
+
 ## Costs
 
 - A second table. `visitors` maps the cookie id to the newest mark id that
@@ -84,5 +90,5 @@ hasn't left yet.
 
 `spec/live.test.ts` checks the decision against the running app: live
 delivery inside a second, replay from `Last-Event-ID`, no history for a
-connection with no starting point, and the "new" badge appearing once and
-then clearing.
+connection with no starting point, the "new" badge appearing once and
+then clearing, and the page reopening a stream the browser gave up on.

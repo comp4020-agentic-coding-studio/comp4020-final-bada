@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { JSDOM } from "jsdom";
 import { expect, inject, it } from "vitest";
 
 // Crit 9's bar: one person's mark reaches every other open session within
@@ -97,4 +98,44 @@ it("badges marks left since a visitor's last page load as new, but not their own
   expect(item(first, mine)).not.toContain(" new");
   // seen once, it isn't new on the next load
   expect(item(await page(), theirs)).not.toContain(" new");
+});
+
+// The browser gives up on a stream for good if a reconnect gets any answer
+// but a stream (a 502 from Fly's proxy mid-deploy). The served page and its
+// served /live.js run in jsdom against a stand-in EventSource, to check the
+// page reopens the stream from the newest mark it has rather than staying dead.
+it("reopens a stream the browser gave up on, from the newest mark shown", async () => {
+  const html = await (await fetch(new URL("/", baseUrl))).text();
+  const script = await (await fetch(new URL("/live.js", baseUrl))).text();
+  const dom = new JSDOM(html, { runScripts: "outside-only" });
+  const { window } = dom;
+
+  class FakeSource extends window.EventTarget {
+    static CLOSED = 2;
+    static opened: FakeSource[] = [];
+    readyState = 0;
+    constructor(readonly url: string) {
+      super();
+      FakeSource.opened.push(this);
+    }
+  }
+  const timers: (() => void)[] = [];
+  Object.assign(window, {
+    EventSource: FakeSource,
+    setTimeout: (fn: () => void) => timers.push(fn),
+  });
+  window.eval(script);
+
+  const after = Number(html.match(/data-after="(\d+)"/)![1]);
+  const [first] = FakeSource.opened;
+  expect(first.url).toBe(`/events?after=${after}`);
+  const data = JSON.stringify({ id: after + 1, html: `<li data-id="${after + 1}">x</li>` });
+  first.dispatchEvent(new window.MessageEvent("message", { data }));
+  first.readyState = FakeSource.CLOSED;
+  first.dispatchEvent(new window.Event("error"));
+
+  expect(window.document.getElementById("live-status")!.textContent).toMatch(/^Reconnecting/);
+  expect(timers).toHaveLength(1);
+  timers[0]();
+  expect(FakeSource.opened.at(-1)!.url).toBe(`/events?after=${after + 1}`);
 });
