@@ -28,10 +28,24 @@ that's fine for a room this size. The wall doesn't paginate, filter, or rank
 --- it's short enough, for now, that reading top to bottom is the whole
 interface.
 
+## Live, and what you missed
+
+The wall is live. A mark someone leaves appears on every other open page
+within about a second, with no reload. With JavaScript off it still works
+the old way: post, and the page reloads with everything on it.
+
+Being live raises a question a static wall never had: what happens to a mark
+left while you weren't quite there, whether your connection dropped for a
+few seconds or you closed the tab until tomorrow? The answer here is that
+nothing is silently dropped. A reconnecting page is sent whatever it missed,
+and marks left since you last had the wall open carry a "new" badge.
+[Decision 1](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/blob/main/docs/decisions/0001-nothing-missed-while-away.md)
+records the options I weighed and what this choice costs.
+
 ## What's deliberately not here yet
 
-Real-time updates (crit 9's bar, not this one), server-side logging (crit
-11's), and any way to edit or delete a mark once it's posted. That last one
+Server-side logging (crit 11's bar, not this one), and any way to edit or
+delete a mark once it's posted. That last one
 is a real decision, not an oversight: a home-cooked app doesn't need an undo
 button its author doesn't want, and a wall where marks are permanent is a
 simpler, more honest promise than one that pretends to be moderatable. If

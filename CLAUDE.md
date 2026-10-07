@@ -18,10 +18,15 @@ change first --- not the other way around.
 - One SQLite file on the Fly volume (`node:sqlite`, no native dependency,
   no separate database service) is the only storage. Don't reach for a
   second store or an ORM for a schema this small.
-- Build to the crit that's currently open, not ahead of it: real-time
-  updates are crit 9's bar, server-side logging is crit 11's. Land them when
-  their crit opens, not preemptively --- a feature built early is one more
-  thing to keep correct while the next crit's actual bar goes unaddressed.
+- Build to the crit that's currently open, not ahead of it: server-side
+  logging is crit 11's bar. Land it when that crit opens, not preemptively
+  --- a feature built early is one more thing to keep correct while the next
+  crit's actual bar goes unaddressed.
+- Live updates must never silently drop a mark. A reconnect replays from the
+  marks table via `Last-Event-ID`, and the server runs as one machine
+  (`--ha=false`) because the listener set is in-process.
+  `docs/decisions/0001-nothing-missed-while-away.md` is the decision; change
+  it before changing this behaviour.
 - Keep dependencies to what's load-bearing. `marked` renders README.md at
   `/readme/`, correctly, without hand-rolling markdown parsing; anything
   else new needs the same justification.
