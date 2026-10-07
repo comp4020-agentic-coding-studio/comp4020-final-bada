@@ -633,6 +633,12 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   consistent with the standing "check:evidence never validates the URL,
   only the SHA" lesson elsewhere in this file.
 
+- `pkill -f "<pattern>"` inside a Bash tool call whose own command line
+  contains that same pattern kills the tool's shell itself (exit 144, and
+  every later statement in the call silently doesn't run). Kill by the
+  listening PID from `ss -ltnp | grep :<port>` instead. Confirmed in
+  `comp4020-final-bada` week 10.
+
 ## Repo-independent lessons
 
 - stylelint-config-standard rejects BEM double-underscore class names
@@ -2249,3 +2255,14 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   and worth distinguishing from a one-off attack-shaped failure (e.g. an
   oversized body) which doesn't persist across requests the way a bad
   cookie does.
+- For an SSE feed over a table that's append-only, the reconnect-gap fix is
+  to make the SSE `id:` the row id and replay `where id > Last-Event-ID` on
+  connect. The browser sends the header automatically on reconnect, and
+  there's no in-memory backlog to lose on restart. A page passes its own
+  starting point as `?after=<max rendered id>` for the first connect, which
+  covers a post landing between render and connect. Gotcha:
+  `Number(searchParams.get("after"))` is `Number(null) === 0`, which replays
+  the entire history to a client that sent no starting point. Default to
+  `NaN` instead. Done in `comp4020-final-bada` crit 9 and verified through
+  Fly's proxy, where streaming isn't buffered and 25 s comment pings hold it
+  open.
