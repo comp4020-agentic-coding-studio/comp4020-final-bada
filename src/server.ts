@@ -1,14 +1,54 @@
-import { createServer, type IncomingMessage } from "node:http";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { readFileSync } from "node:fs";
 import { marked } from "marked";
 import { getCookie, getVisitorId, setCookie } from "./cookies.ts";
-import { escapeHtml, marksList, page } from "./render.ts";
-import { insertMark, listMarks } from "./db.ts";
+import { escapeHtml, markItem, marksList, page } from "./render.ts";
+import { getSeen, insertMark, listMarks, markSeen, marksAfter, type Mark } from "./db.ts";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const MAX_NAME = 40;
 const MAX_BODY = 280;
 const MAX_REQUEST_BYTES = 8192;
+// Fly's proxy drops a connection that's silent for too long; a comment line
+// every so often keeps an idle live connection open.
+const HEARTBEAT_MS = 25_000;
+const liveScript = readFileSync(new URL("./live.js", import.meta.url), "utf8");
+
+// Every open live connection, on this one machine (fly.toml runs exactly one,
+// and deploys pass --ha=false, so an in-process set is the whole audience).
+interface Listener {
+  res: ServerResponse;
+  visitorId: string;
+}
+const listeners = new Set<Listener>();
+
+// Each listener gets the mark rendered for them, so "yours" is right per
+// visitor. The SSE id is the mark's id: a reconnecting browser sends it back
+// as Last-Event-ID, and marksAfter() replays whatever it missed meanwhile.
+function deliver(listener: Listener, mark: Mark): void {
+  const html = markItem(mark, listener.visitorId, true);
+  listener.res.write(`id: ${mark.id}\ndata: ${JSON.stringify({ id: mark.id, html })}\n\n`);
+  markSeen(listener.visitorId, mark.id);
+}
+
+function openStream(req: IncomingMessage, res: ServerResponse, visitorId: string, after: number): void {
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream; charset=utf-8",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+  res.write("retry: 2000\n\n");
+  const listener = { res, visitorId };
+  if (Number.isSafeInteger(after) && after >= 0) {
+    for (const mark of marksAfter(after)) deliver(listener, mark);
+  }
+  listeners.add(listener);
+  req.on("close", () => listeners.delete(listener));
+}
+
+setInterval(() => {
+  for (const { res } of listeners) res.write(": ping\n\n");
+}, HEARTBEAT_MS).unref();
 
 // `.trim()` only strips whitespace (Unicode `Zs`), not zero-width/format
 // characters (`Cf`, e.g. U+200B) — a string made of nothing else survives
@@ -28,7 +68,8 @@ async function readBody(req: IncomingMessage): Promise<string> {
   return Buffer.concat(chunks).toString("utf8");
 }
 
-function homePage(marks: ReturnType<typeof listMarks>, visitorId: string, lastName: string): string {
+function homePage(marks: Mark[], visitorId: string, seenId: number | undefined, lastName: string): string {
+  const newest = marks[0]?.id ?? 0;
   return page(
     "Marks",
     `<header>
@@ -47,8 +88,10 @@ function homePage(marks: ReturnType<typeof listMarks>, visitorId: string, lastNa
   </p>
   <button type="submit">Leave it</button>
 </form>
-${marksList(marks, visitorId)}
-</main>`,
+<p id="live-status" class="live-status" data-after="${newest}" hidden></p>
+${marksList(marks, visitorId, seenId)}
+</main>
+<script src="/live.js" defer></script>`,
   );
 }
 
@@ -60,8 +103,25 @@ const server = createServer((req, res) => {
 
       if (req.method === "GET" && url.pathname === "/") {
         const lastName = getCookie(req, "name") ?? "";
+        const marks = listMarks();
+        const seenId = getSeen(visitorId);
+        if (marks.length > 0) markSeen(visitorId, marks[0].id);
         res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-        res.end(homePage(listMarks(), visitorId, lastName));
+        res.end(homePage(marks, visitorId, seenId, lastName));
+        return;
+      }
+
+      if (req.method === "GET" && url.pathname === "/events") {
+        // A reconnect's Last-Event-ID wins over the page's own starting point.
+        // No starting point at all means live-only, not the whole history.
+        const after = Number(req.headers["last-event-id"] ?? url.searchParams.get("after") ?? NaN);
+        openStream(req, res, visitorId, after);
+        return;
+      }
+
+      if (req.method === "GET" && url.pathname === "/live.js") {
+        res.writeHead(200, { "Content-Type": "text/javascript; charset=utf-8" });
+        res.end(liveScript);
         return;
       }
 
@@ -71,8 +131,9 @@ const server = createServer((req, res) => {
         const name = (params.get("name") ?? "").trim().slice(0, MAX_NAME);
         const body = (params.get("body") ?? "").trim().slice(0, MAX_BODY);
         if (hasVisibleContent(name) && hasVisibleContent(body)) {
-          insertMark(visitorId, name, body);
+          const mark = insertMark(visitorId, name, body);
           setCookie(res, "name", name);
+          for (const listener of listeners) deliver(listener, mark);
         }
         res.writeHead(303, { Location: "/" });
         res.end();

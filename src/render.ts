@@ -54,6 +54,7 @@ export function page(title: string, body: string): string {
     border-left: 3px solid color-mix(in srgb, currentColor 25%, transparent);
   }
   .mark.mine { border-left-color: currentColor; }
+  .mark.new { border-left-color: Highlight; }
   .mark-body { margin: 0 0 0.35rem; white-space: pre-wrap; }
   .mark-meta {
     margin: 0;
@@ -68,6 +69,11 @@ export function page(title: string, body: string): string {
     padding: 0 0.5em;
     margin-left: 0.25em;
   }
+  .live-status {
+    font-size: 0.85rem;
+    margin: 0 0 1rem;
+    color: color-mix(in srgb, currentColor 65%, transparent);
+  }
   .empty { color: color-mix(in srgb, currentColor 65%, transparent); }
   footer { margin-top: 3rem; font-size: 0.85rem; }
 </style>
@@ -79,20 +85,26 @@ ${body}
 `;
 }
 
-export function marksList(marks: Mark[], visitorId: string): string {
-  if (marks.length === 0) {
-    return `<p class="empty">No marks yet — be the first.</p>`;
-  }
-  const items = marks
-    .map((mark) => {
-      const mine = mark.visitor_id === visitorId;
-      return `<li class="mark${mine ? " mine" : ""}">
+export function markItem(mark: Mark, visitorId: string, isNew: boolean): string {
+  const mine = mark.visitor_id === visitorId;
+  const fresh = isNew && !mine;
+  const classes = ["mark", mine && "mine", fresh && "new"].filter(Boolean).join(" ");
+  return `<li class="${classes}" data-id="${mark.id}">
   <p class="mark-body">${escapeHtml(mark.body)}</p>
   <p class="mark-meta">${escapeHtml(mark.name)} · <time datetime="${mark.created_at}">${timeFormat.format(new Date(mark.created_at))}</time>${
     mine ? ' <span class="badge">yours</span>' : ""
-  }</p>
+  }${fresh ? ' <span class="badge">new</span>' : ""}</p>
 </li>`;
-    })
+}
+
+// `seenId` is the newest mark this visitor had already seen before this page
+// load; anything newer that isn't theirs is badged "new". Undefined on a first
+// visit, where everything is new and so nothing is worth singling out.
+export function marksList(marks: Mark[], visitorId: string, seenId: number | undefined): string {
+  const items = marks
+    .map((mark) => markItem(mark, visitorId, seenId !== undefined && mark.id > seenId))
     .join("\n");
-  return `<ol class="marks">\n${items}\n</ol>`;
+  // The list is always there, even empty, so a live mark has somewhere to go.
+  const empty = marks.length === 0 ? `<p class="empty">No marks yet — be the first.</p>\n` : "";
+  return `${empty}<ol class="marks" aria-live="polite">\n${items}\n</ol>`;
 }
