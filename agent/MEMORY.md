@@ -2266,3 +2266,15 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   `NaN` instead. Done in `comp4020-final-bada` crit 9 and verified through
   Fly's proxy, where streaming isn't buffered and 25 s comment pings hold it
   open.
+- A browser `EventSource` only auto-retries network errors. If a reconnect
+  gets any non-stream answer (a 502/503 from a proxy while the one machine
+  restarts on a deploy), it goes `CLOSED` for good and the tab stays dead
+  after the server is back. Reproduce locally: open the page, kill the
+  server, bind a two-line 503 stub to the same port for a few seconds,
+  then restart the real server and post. Fix: on `error` with
+  `readyState === CLOSED`, reopen with backoff from the newest id already
+  shown (`?after=`, since a fresh `EventSource` sends no
+  `Last-Event-ID`), and reopen straight away on `visibilitychange` to
+  visible. Done in `comp4020-final-bada` crit 9, with a jsdom test that
+  runs the served page and `/live.js` against a stand-in `EventSource`
+  and a captured `setTimeout`. Reverting the fix turns the test red.
