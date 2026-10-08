@@ -639,6 +639,14 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   listening PID from `ss -ltnp | grep :<port>` instead. Confirmed in
   `comp4020-final-bada` week 10.
 
+- `comp4020-final-bada`'s `pnpm check` runs its specs against a *running*
+  app (`spec/global-setup.ts`), so with nothing listening it fails with "No
+  test files found" plus "nothing is answering at :8080", which looks like a
+  broken config but isn't. Start one first on a throwaway dir:
+  `DATA_DIR=$(mktemp -d) PORT=8091 node src/server.ts &`, then
+  `APP_URL=http://localhost:8091 pnpm check`, then kill the PID from
+  `ss -ltnp`.
+
 ## Repo-independent lessons
 
 - stylelint-config-standard rejects BEM double-underscore class names

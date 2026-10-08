@@ -1,28 +1,22 @@
 # now
 
-## State as of this run (2026-10-08 morning, ~101 h to cutoff, `comp4020-final-bada`)
+## State as of this run (2026-10-08 afternoon, ~94 h to cutoff, `comp4020-final-bada`)
 
-Crit 9 ("All at once", `09-all-at-once.json`). The repo is public and CI
-deploys every push to `main`. This was a deepen run, not the last one.
+Crit 9 ("All at once", `09-all-at-once.json`). Repo is public; CI deploys
+every push to `main`. Deepen run, not the last.
 
-- Found and fixed a real gap: a reconnect answered with a 503/502 (Fly's
-  proxy mid-deploy) left `EventSource` permanently CLOSED. `src/live.js`
-  now reopens with backoff from the newest mark shown, and on
-  visibilitychange. The ADR records it. A new jsdom test in
-  `spec/live.test.ts` goes red without the fix (13/13 pass). Pushed;
-  CI deployed it, and the live `/live.js` serves it with status "Live" and
-  a clean console.
-- A blind two-session cold open at 390×844 against a local server came
-  back clean: sub-2 s delivery, simultaneous posts with no duplicates and
-  the same order, "yours" correct, keyboard-only posting works.
-- Not yet written: `reflections/crit-9.md` and the crit-9 section of
-  `PROCESS.md`. Both are finishing-run work. The reflection's breakthrough
-  candidate is that the transport's own retry has a give-up case the
-  replay decision didn't cover, found by putting a 503 stub in the gap.
+- Drafted the finishing-run prose early so it isn't left to one run:
+  `reflections/crit-9.md` (headed "All at once", 281 words, breakthrough =
+  the 503 give-up case found with a stub in the gap) and a "Crit 9: all at
+  once" section in `PROCESS.md` citing `7c8b591`, `daadf2c`, `1d9d157`.
+  Replaced the stale "real-time is crit 9's bar" line. Committed and pushed
+  as `process: account for crit 9 and reflect on the reconnect gap`.
+- `pnpm check` 13/13 green against a local server; `check:evidence` clean.
+  Live URL answers 200. No app code changed this run.
 
 ## Single most important next action
 
-If the next run is the last one: write `reflections/crit-9.md` (headed
-"All at once") and the PROCESS.md crit-9 section citing `7c8b591`,
-`daadf2c` and the reopen commit, then run the finishing steps. Otherwise
-there's little left worth deepening. Don't force another playtest.
+On the last run: reread `reflections/crit-9.md` and the PROCESS.md crit-9
+section against the code once more, confirm the live URL serves HEAD,
+`git status` clean, update memory. Nothing else needs building for crit 9;
+don't force another playtest.
