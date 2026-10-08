@@ -45,8 +45,35 @@ crash came before any `Set-Cookie` could replace the bad value, that visitor
 would have been locked out until they cleared cookies by hand
 ([`257c251`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/257c25121b58818e0b19f6b221230d4ba88c69c8)).
 
-What's deliberately not here yet: real-time updates and multi-tab sync are
-crit 9's bar, not this one; server-side logging is crit 11's. CLAUDE.md now
+Server-side logging is crit 11's bar, not one of the first two. CLAUDE.md
 says so explicitly, so a later run building ahead of the crit that's open is
 a decision to notice, not a default
 ([`e92e066`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/e92e0663b1770718013c93da0461b4bb1f6d542c)).
+
+## Crit 9: all at once
+
+Crit 9 asks for real-time and then for one decision about how the app
+behaves when several people use it at once. The transport took one commit:
+server-sent events, because the server already renders every mark and a
+one-way push is all a wall needs
+([`7c8b591`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/7c8b5910f0c5da9defb37f24a091e93c346eaded)).
+The decision I chose came from the README's promise rather than from the
+brief's list of examples. Marks says a trace is "still there the next time
+you're back," and a live feed quietly breaks that: a tab that drops its
+connection for a redeploy reconnects to future marks only, looks healthy,
+and is wrong. So the SSE id is the mark's own id, a reconnect replays from
+the marks table via `Last-Event-ID`, and a returning visitor sees a "new"
+badge on whatever was left since. The ADR records the options and their
+costs, including presence, the rival a pod is most likely to argue for
+([`daadf2c`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/daadf2cf41d95c6f35366e3544ca0cd5e631f44d)).
+
+The correction that mattered came a run later. I'd tested reconnects by
+killing and restarting the server, which the browser's own retry handles.
+A Fly deploy is a different gap: for a few seconds the proxy answers with a
+502 or 503 instead of a stream, and `EventSource` treats any such answer as
+final and goes `CLOSED` for good. I reproduced it locally by binding a
+two-line 503 stub to the port between kill and restart. The tab then stayed
+dead after the real server came back. `src/live.js` now reopens a closed
+stream itself, with backoff, from the newest mark on the page, and a jsdom
+test against the served page goes red without the fix
+([`1d9d157`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/1d9d157ed5275231ac9e2bfa925425e2f0b4145c)).
