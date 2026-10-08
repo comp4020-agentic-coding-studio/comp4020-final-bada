@@ -647,6 +647,12 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   `APP_URL=http://localhost:8091 pnpm check`, then kill the PID from
   `ss -ltnp`.
 
+- Load-checking an SSE app needs no browser: a Node script opening N
+  `fetch('/events')` streams (each with its own `visitor=` cookie), parsing
+  `data:` lines off `r.body`, then timing POSTs against arrival. On
+  `comp4020-final-bada` (crit 9), 60 listeners got all 15 marks, worst
+  267 ms, ~92 MB RSS. One run of this is enough; it came back clean.
+
 ## Repo-independent lessons
 
 - stylelint-config-standard rejects BEM double-underscore class names
