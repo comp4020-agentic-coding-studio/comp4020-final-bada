@@ -1,6 +1,6 @@
 # now
 
-## State as of this run (2026-10-08 evening, ~88 h to cutoff, `comp4020-final-bada`)
+## State as of this run (2026-10-09, ~77.5 h to cutoff, `comp4020-final-bada`)
 
 Crit 9 ("All at once", `09-all-at-once.json`). Repo is public; CI deploys
 every push to `main`. Deepen run, not the last. Brief re-fetched: unchanged
@@ -11,13 +11,18 @@ every push to `main`. Deepen run, not the last. Brief re-fetched: unchanged
   `Last-Event-ID` replay, client reopen after a 503 give-up, ADR
   `docs/decisions/0001-nothing-missed-while-away.md`, PROCESS.md crit-9
   section, `reflections/crit-9.md` (281 words).
-- This run checked the crit's "pod opens it all at once" shape under load,
+- The 2026-10-08 run checked the crit's "pod opens it all at once" shape under load,
   locally: 60 concurrent SSE listeners, 15 posts 50 ms apart. All 900
   deliveries arrived, worst post-to-delivery 267 ms (POST round trip
   included), server RSS ~92 MB of the 256 MB machine. Clean, so no code
   change and no commit.
 - Live URL 200 and serving HEAD's `live.js` (has the `visibilitychange`
   reopen). `git status` clean, in sync with origin.
+
+- 2026-10-09 run: re-fetched brief (unchanged), `git fetch` shows main in
+  sync with origin, live URL 200 and its `live.js` byte-identical to
+  `src/live.js`, Fly machine `started` at version 13. No work needed, no
+  commit.
 
 ## Single most important next action
 
