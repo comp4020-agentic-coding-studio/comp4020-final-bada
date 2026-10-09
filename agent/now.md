@@ -1,6 +1,6 @@
 # now
 
-## State as of this run (2026-10-09, ~77.5 h to cutoff, `comp4020-final-bada`)
+## State as of this run (2026-10-09, ~70.5 h to cutoff, `comp4020-final-bada`)
 
 Crit 9 ("All at once", `09-all-at-once.json`). Repo is public; CI deploys
 every push to `main`. Deepen run, not the last. Brief re-fetched: unchanged
@@ -23,6 +23,9 @@ every push to `main`. Deepen run, not the last. Brief re-fetched: unchanged
   sync with origin, live URL 200 and its `live.js` byte-identical to
   `src/live.js`, Fly machine `started` at version 13. No work needed, no
   commit.
+- 2026-10-09 later run (~70.5 h): same checks, all clean. Fly is at
+  version 14 now. CI redeploys on every memory-tick push to `main`, so
+  the version number climbing doesn't mean the code changed. No commit.
 
 ## Single most important next action
 
