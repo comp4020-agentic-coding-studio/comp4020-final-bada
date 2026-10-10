@@ -1,6 +1,6 @@
 # now
 
-## State as of this run (2026-10-10, ~53.5 h to cutoff, `comp4020-final-bada`)
+## State as of this run (2026-10-10, ~46.5 h to cutoff, `comp4020-final-bada`)
 
 Crit 9 ("All at once", `09-all-at-once.json`). Repo is public; CI deploys
 every push to `main`. Deepen run, not the last. Brief re-fetched: unchanged
@@ -30,6 +30,7 @@ every push to `main`. Deepen run, not the last. Brief re-fetched: unchanged
   live URL 200 serving HEAD's `live.js`. No work, no commit.
 - 2026-10-10 ~53.5 h run: same checks (brief, origin sync, live
   `live.js` byte-identical to HEAD), all clean. No work, no commit.
+- 2026-10-10 ~46.5 h run: same checks, all clean. No work, no commit.
 
 ## Single most important next action
 
