@@ -49,6 +49,10 @@ export function insertMark(visitorId: string, name: string, body: string): Mark 
   return getStmt.get(lastInsertRowid) as unknown as Mark;
 }
 
+export function getMark(id: number): Mark | undefined {
+  return getStmt.get(id) as unknown as Mark | undefined;
+}
+
 export function listMarks(): Mark[] {
   return listStmt.all() as unknown as Mark[];
 }

@@ -3,8 +3,8 @@ import { readFileSync } from "node:fs";
 import { marked } from "marked";
 import { getCookie, getVisitorId, setCookie } from "./cookies.ts";
 import { escapeHtml, markItem, marksList, page } from "./render.ts";
-import { getSeen, insertMark, listMarks, markSeen, marksAfter, type Mark } from "./db.ts";
-import { excerpt, log } from "./log.ts";
+import { getMark, getSeen, insertMark, listMarks, markSeen, marksAfter, type Mark } from "./db.ts";
+import { excerpt, log, visitorTag } from "./log.ts";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const MAX_NAME = 40;
@@ -153,8 +153,14 @@ const server = createServer((req, res) => {
         if (hasVisibleContent(name) && hasVisibleContent(body)) {
           const mark = insertMark(visitorId, name, body);
           setCookie(res, "name", name);
-          log(visitorId, "post", { mark: mark.id, name, body: excerpt(body) });
-          for (const listener of listeners) deliver(listener, mark);
+          // `delivered` counts other people's open pages it reached live, so
+          // the log can say the second person saw it arrive.
+          let delivered = 0;
+          for (const listener of listeners) {
+            deliver(listener, mark);
+            if (listener.visitorId !== visitorId) delivered++;
+          }
+          log(visitorId, "post", { mark: mark.id, name, body: excerpt(body), delivered });
         } else {
           log(visitorId, "post-refused", { reason: hasVisibleContent(name) ? "empty mark" : "empty name" });
         }
@@ -176,7 +182,15 @@ const server = createServer((req, res) => {
       // docs/decisions/0002), so there is no route that changes or removes
       // one. An attempt is still worth a line in the log.
       if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "POST") {
-        log(visitorId, "refused", { method: req.method ?? "", path: url.pathname });
+        // Naming the target's owner lets the log say whether someone went
+        // after their own mark or another person's.
+        const id = url.pathname.match(/^\/marks\/(\d+)$/)?.[1];
+        const target = id === undefined ? undefined : getMark(Number(id));
+        log(visitorId, "refused", {
+          method: req.method ?? "",
+          path: url.pathname,
+          ...(target && { mark: target.id, owner: visitorTag(target.visitor_id) }),
+        });
         res.writeHead(405, { Allow: "GET, HEAD, POST", "Content-Type": "text/plain; charset=utf-8" });
         res.end("marks can't be changed or removed");
         return;

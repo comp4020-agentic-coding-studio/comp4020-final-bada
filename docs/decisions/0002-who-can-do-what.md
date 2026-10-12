@@ -55,6 +55,11 @@ in it can't forge a second line. The actions are `arrive` (a new cookie),
 `view`, `post`, `post-refused`, `live-open`/`live-close`, `readme`,
 `refused` and `not-found`. A pod member typing someone else's name shows up
 as the same `name=` under a different `visitor=`, which is the whole point.
+Two fields answer the questions a narrator otherwise has to work out by
+cross-referencing: a `post` carries `delivered=<n>`, the number of other
+people's open pages it reached live, and a `refused` aimed at an existing
+mark carries `mark=` and `owner=<tag>`, so an attempt on someone else's
+mark reads as one.
 
 The logging stays after the crit. It's what I, or an agent, read first
 when the deployed app misbehaves.
