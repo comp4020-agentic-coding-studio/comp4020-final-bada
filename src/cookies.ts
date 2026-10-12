@@ -35,13 +35,18 @@ export function setCookie(res: ServerResponse, name: string, value: string): voi
   );
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 // The one piece of identity this app has: a random id in a first-party
 // cookie, issued the first time someone shows up. No accounts, no passwords —
-// it only has to tell two visitors apart, not verify who they are.
-export function getVisitorId(req: IncomingMessage, res: ServerResponse): string {
+// it only has to tell two visitors apart, not verify who they are. Only an id
+// this server could have issued counts; anything else (`visitor=alice`, an
+// empty value) gets a fresh one, so nobody picks a guessable id for
+// themselves. `fresh` is true when this request is someone's first.
+export function getVisitorId(req: IncomingMessage, res: ServerResponse): { id: string; fresh: boolean } {
   const existing = getCookie(req, "visitor");
-  if (existing) return existing;
+  if (existing && UUID.test(existing)) return { id: existing, fresh: false };
   const id = randomUUID();
   setCookie(res, "visitor", id);
-  return id;
+  return { id, fresh: true };
 }

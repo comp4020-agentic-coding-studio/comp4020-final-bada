@@ -4,6 +4,7 @@ import { marked } from "marked";
 import { getCookie, getVisitorId, setCookie } from "./cookies.ts";
 import { escapeHtml, markItem, marksList, page } from "./render.ts";
 import { getSeen, insertMark, listMarks, markSeen, marksAfter, type Mark } from "./db.ts";
+import { excerpt, log } from "./log.ts";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const MAX_NAME = 40;
@@ -39,11 +40,15 @@ function openStream(req: IncomingMessage, res: ServerResponse, visitorId: string
   });
   res.write("retry: 2000\n\n");
   const listener = { res, visitorId };
-  if (Number.isSafeInteger(after) && after >= 0) {
-    for (const mark of marksAfter(after)) deliver(listener, mark);
-  }
+  const replay = Number.isSafeInteger(after) && after >= 0 ? marksAfter(after) : [];
+  for (const mark of replay) deliver(listener, mark);
   listeners.add(listener);
-  req.on("close", () => listeners.delete(listener));
+  const opened = Date.now();
+  log(visitorId, "live-open", { replayed: replay.length, listeners: listeners.size });
+  req.on("close", () => {
+    listeners.delete(listener);
+    log(visitorId, "live-close", { seconds: Math.round((Date.now() - opened) / 1000) });
+  });
 }
 
 setInterval(() => {
@@ -97,15 +102,30 @@ ${marksList(marks, visitorId, seenId)}
 
 const server = createServer((req, res) => {
   void (async () => {
+    let visitorId = "";
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
-      const visitorId = getVisitorId(req, res);
+
+      // Browsers ask for this on every visit; answering it quietly keeps it
+      // out of the log, where it would read as a person doing something.
+      if (req.method === "GET" && url.pathname === "/favicon.ico") {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+
+      const visitor = getVisitorId(req, res);
+      visitorId = visitor.id;
+      if (visitor.fresh) log(visitorId, "arrive", { path: url.pathname });
 
       if (req.method === "GET" && url.pathname === "/") {
         const lastName = getCookie(req, "name") ?? "";
         const marks = listMarks();
         const seenId = getSeen(visitorId);
         if (marks.length > 0) markSeen(visitorId, marks[0].id);
+        const unseen =
+          seenId === undefined ? 0 : marks.filter((m) => m.id > seenId && m.visitor_id !== visitorId).length;
+        log(visitorId, "view", { marks: marks.length, new: unseen });
         res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
         res.end(homePage(marks, visitorId, seenId, lastName));
         return;
@@ -133,7 +153,10 @@ const server = createServer((req, res) => {
         if (hasVisibleContent(name) && hasVisibleContent(body)) {
           const mark = insertMark(visitorId, name, body);
           setCookie(res, "name", name);
+          log(visitorId, "post", { mark: mark.id, name, body: excerpt(body) });
           for (const listener of listeners) deliver(listener, mark);
+        } else {
+          log(visitorId, "post-refused", { reason: hasVisibleContent(name) ? "empty mark" : "empty name" });
         }
         res.writeHead(303, { Location: "/" });
         res.end();
@@ -145,12 +168,25 @@ const server = createServer((req, res) => {
         const html = await marked.parse(md);
         res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
         res.end(page("About this app", `<main>${html}</main>`));
+        log(visitorId, "readme");
         return;
       }
 
+      // Marks are permanent for everyone, their author included (README.md,
+      // docs/decisions/0002), so there is no route that changes or removes
+      // one. An attempt is still worth a line in the log.
+      if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "POST") {
+        log(visitorId, "refused", { method: req.method ?? "", path: url.pathname });
+        res.writeHead(405, { Allow: "GET, HEAD, POST", "Content-Type": "text/plain; charset=utf-8" });
+        res.end("marks can't be changed or removed");
+        return;
+      }
+
+      log(visitorId, "not-found", { path: url.pathname });
       res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
       res.end("not found");
     } catch (err) {
+      if (visitorId) log(visitorId, "error", { message: String(err) });
       console.error(err);
       if (!res.headersSent) {
         res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
