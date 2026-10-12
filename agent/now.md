@@ -1,26 +1,35 @@
 # now
 
-## State as of the final run (2026-10-11, ~29.5 h to cutoff, `comp4020-final-bada`)
+## State as of 2026-10-12 (~160 h to cutoff, `comp4020-final-bada`, crit 10)
 
-Crit 9 ("All at once", `09-all-at-once.json`) is finished. This was the last
-run for this deliverable. The brief is unchanged.
+Crit 10 ("Fly by instruments", `10-fly-by-instruments.json`) is open. It
+asks for two distinguishable users, server-enforced view/modify rules
+recorded in the repo, server-side logs of who did what (kept after the
+crit), and `reflections/crit-10.md` plus a PROCESS.md overview.
 
-- Shipped: SSE live delivery with `Last-Event-ID` replay from the marks
-  table, the client reopening a stream after a 503 makes it give up, ADR
-  `docs/decisions/0001-nothing-missed-while-away.md`, the PROCESS.md crit-9
-  section, and `reflections/crit-9.md` (281 words, headed "All at once").
-- Finishing checks this run: reread the reflection and PROCESS.md against
-  the code (the claims about the "new" badge, the reopen with backoff,
-  `visibilitychange` and `Last-Event-ID`/`?after=` all hold). `pnpm check`
-  is green (13 tests) against a throwaway local server, which I then
-  stopped. On the live site, `/` and `/readme/` both return 200 with a clean
-  console in a real browser, `/events?after=0` replays through Fly, live
-  `live.js` is byte-identical to HEAD, and Fly is `started` at v18.
-- `git status` is clean and main is in sync with origin. No commits needed.
+Done this run (pushed; the repo is public, so CI deployed it, Fly v21):
 
-## Single most important next action
+- `src/log.ts`: one logfmt line per action to stdout, led by
+  `visitor=<6-hex sha256 tag>`, never the raw cookie id. String values are
+  JSON-quoted so they can't forge lines. The actions are arrive, view, post,
+  post-refused, live-open/close, readme, refused (405 for PUT/PATCH/DELETE)
+  and not-found. `/favicon.ico` answers 204 so it doesn't show up in the log.
+- `getVisitorId` only accepts UUID-shaped cookies. Anything else gets a
+  fresh id.
+- `docs/decisions/0002-who-can-do-what.md`, README "Who can do what",
+  CLAUDE.md rule updated (the stale "logging is crit 11" rule is gone).
+- `spec/access.test.ts`: 6 tests, 19 in total, all green.
+- Checked with two isolated `agent-browser --session a|b` browsers both
+  posting as "Ana". Ownership and the live "new" badge were correct, and
+  the log told them apart. On live I probed the GET routes, a DELETE and a
+  bogus cookie, then read `flyctl logs`. I made no posts on production.
 
-Nothing more for crit 9. When the next final-project crit opens, re-fetch
-its brief, re-read `package.json`'s `check` script and `spec/README.md`
-(course automation can move them), and build to that crit's bar only.
-Server-side logging belongs to crit 11.
+## Next action
+
+Deepen. The best candidate is a cold two-profile pass by a blind subagent
+against a local server on its own port (not production). Its narration
+should come from the log alone, to check that the log is enough to narrate
+the crit. Consider whether a `name=` typed by two different visitors
+should be visible on the wall too (ADR 0002 lists this as a cost). On the
+final run, write `reflections/crit-10.md` (headed "Fly by instruments") and
+a crit-10 section in PROCESS.md citing `git log` commits.

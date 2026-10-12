@@ -653,6 +653,13 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   `comp4020-final-bada` (crit 9), 60 listeners got all 15 marks, worst
   267 ms, ~92 MB RSS. One run of this is enough; it came back clean.
 
+- Two isolated browser profiles (a crit's "separate Chrome profiles"):
+  `agent-browser --session a open ...` / `--session b ...` gives each its
+  own cookie jar. Confirmed in `comp4020-final-bada` crit 10.
+- `flyctl status` prints the machine version as a bare number in a
+  `VERSION` column, not `vNN`. A deploy-wait loop grepping `v[0-9]+`
+  never matches. Use the `LAST UPDATED` timestamp instead.
+
 ## Repo-independent lessons
 
 - stylelint-config-standard rejects BEM double-underscore class names
