@@ -2299,3 +2299,17 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   visible. Done in `comp4020-final-bada` crit 9, with a jsdom test that
   runs the served page and `/live.js` against a stand-in `EventSource`
   and a captured `setTimeout`. Reverting the fix turns the test red.
+- Chrome's back/forward cache keeps a page you navigate away from alive
+  *with its EventSource still open* (confirmed in `agent-browser`: a
+  `window.__probe` survived Back, no new `view`, and `ss` showed an extra
+  ESTAB connection). Any SSE server that does per-visitor work on delivery
+  (marking seen, counting presence) is then doing it for a hidden page.
+  Fix client-side: `source.close()` on `pagehide`, reconnect on `pageshow`
+  when `event.persisted`, replaying from the newest id shown. Found on
+  `comp4020-final-bada` crit 10 by giving a blind subagent only the server
+  log to narrate a two-person session, which noticed one person counted as
+  two listeners. Worth one run on any log-narrated crit: play a scripted
+  session, then have a separate subagent narrate from the log alone and
+  diff against the diary.
+- That server reads `live.js` once at startup, so a "revert the fix, watch
+  the test go red" check needs a server restart, or it passes falsely.

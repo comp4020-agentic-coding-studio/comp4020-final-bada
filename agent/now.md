@@ -1,35 +1,33 @@
 # now
 
-## State as of 2026-10-12 (~160 h to cutoff, `comp4020-final-bada`, crit 10)
+## State as of 2026-10-13 (~145 h to cutoff, `comp4020-final-bada`, crit 10)
 
-Crit 10 ("Fly by instruments", `10-fly-by-instruments.json`) is open. It
-asks for two distinguishable users, server-enforced view/modify rules
-recorded in the repo, server-side logs of who did what (kept after the
-crit), and `reflections/crit-10.md` plus a PROCESS.md overview.
+Crit 10 ("Fly by instruments") is open. The core work was done in the
+2026-10-12 run: visitor-tagged logfmt log, ADR 0002, `spec/access.test.ts`.
 
-Done this run (pushed; the repo is public, so CI deployed it, Fly v21):
+Done this run (pushed, CI deployed Fly v23, and I checked it live):
 
-- `src/log.ts`: one logfmt line per action to stdout, led by
-  `visitor=<6-hex sha256 tag>`, never the raw cookie id. String values are
-  JSON-quoted so they can't forge lines. The actions are arrive, view, post,
-  post-refused, live-open/close, readme, refused (405 for PUT/PATCH/DELETE)
-  and not-found. `/favicon.ico` answers 204 so it doesn't show up in the log.
-- `getVisitorId` only accepts UUID-shaped cookies. Anything else gets a
-  fresh id.
-- `docs/decisions/0002-who-can-do-what.md`, README "Who can do what",
-  CLAUDE.md rule updated (the stale "logging is crit 11" rule is gone).
-- `spec/access.test.ts`: 6 tests, 19 in total, all green.
-- Checked with two isolated `agent-browser --session a|b` browsers both
-  posting as "Ana". Ownership and the live "new" badge were correct, and
-  the log told them apart. On live I probed the GET routes, a DELETE and a
-  bogus cookie, then read `flyctl logs`. I made no posts on production.
+- Blind test in two stages against a local server on :8093. A subagent
+  played two strangers in `--session a|b`, keeping a diary. A second
+  subagent narrated from the server log alone. The narration matched the
+  diary. The two gaps it hit are fixed in `e2dce83`: `post` now carries
+  `delivered=<n>` (other people's open pages it reached live), and
+  `refused` on `/marks/N` carries `mark=` and `owner=<tag>`.
+- The narration flagged one person showing as two listeners. The cause was
+  Chrome's back/forward cache keeping the left page's EventSource open.
+  The server kept delivering to that hidden page and marking those marks
+  seen, so a later fresh visit badged nothing new. Fixed in `live.js`:
+  close the stream on `pagehide`, reconnect on `pageshow` when `persisted`.
+  Added a jsdom test (red without the fix) and re-ran the repro in a real
+  browser (`b7c064d`).
 
 ## Next action
 
-Deepen. The best candidate is a cold two-profile pass by a blind subagent
-against a local server on its own port (not production). Its narration
-should come from the log alone, to check that the log is enough to narrate
-the crit. Consider whether a `name=` typed by two different visitors
-should be visible on the wall too (ADR 0002 lists this as a cost). On the
-final run, write `reflections/crit-10.md` (headed "Fly by instruments") and
-a crit-10 section in PROCESS.md citing `git log` commits.
+The final run: write `reflections/crit-10.md` (headed "Fly by
+instruments", 150–300 words). Candidate breakthrough: narrating from the
+log alone surfaced a real bug (the bfcache listener) that no playtest or
+spec had caught. Add a crit-10 section to PROCESS.md citing `d01b01c`,
+`3e1de0e`, `b7c064d` and `e2dce83` (run `git log` for exact
+SHAs and `git remote -v` for the org). If a deepen run comes first,
+consider whether same-name visitors need a wall-visible distinction (ADR
+0002 lists it as a cost). Don't repeat the blind narration pass.
