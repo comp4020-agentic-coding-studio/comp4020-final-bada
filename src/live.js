@@ -48,6 +48,19 @@ if (list && status && "EventSource" in window) {
     if (document.visibilityState === "visible" && source.readyState === EventSource.CLOSED) connect();
   });
 
+  // Chrome keeps a page it navigates away from alive in the back/forward
+  // cache, stream and all. Left open, the server goes on delivering to a page
+  // nobody can see and counts those marks as seen, so they'd never be badged
+  // new. Close it on the way out; on the way back, catch up from the newest
+  // mark on the page.
+  window.addEventListener("pagehide", () => {
+    clearTimeout(retryTimer);
+    source.close();
+  });
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted && source.readyState === EventSource.CLOSED) connect();
+  });
+
   status.hidden = false;
   status.textContent = "Connecting…";
   connect();

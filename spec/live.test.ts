@@ -118,6 +118,9 @@ it("reopens a stream the browser gave up on, from the newest mark shown", async 
       super();
       FakeSource.opened.push(this);
     }
+    close() {
+      this.readyState = FakeSource.CLOSED;
+    }
   }
   const timers: (() => void)[] = [];
   Object.assign(window, {
@@ -138,4 +141,38 @@ it("reopens a stream the browser gave up on, from the newest mark shown", async 
   expect(timers).toHaveLength(1);
   timers[0]();
   expect(FakeSource.opened.at(-1)!.url).toBe(`/events?after=${after + 1}`);
+});
+
+// Chrome's back/forward cache keeps a page you navigate away from alive, open
+// stream included. The server would go on delivering to it, and counting
+// those marks as seen, so they'd never be badged new when you came back.
+it("closes the stream while the page is cached away, and catches up on return", async () => {
+  const html = await (await fetch(new URL("/", baseUrl))).text();
+  const script = await (await fetch(new URL("/live.js", baseUrl))).text();
+  const { window } = new JSDOM(html, { runScripts: "outside-only" });
+
+  class FakeSource extends window.EventTarget {
+    static CLOSED = 2;
+    static opened: FakeSource[] = [];
+    readyState = 0;
+    constructor(readonly url: string) {
+      super();
+      FakeSource.opened.push(this);
+    }
+    close() {
+      this.readyState = FakeSource.CLOSED;
+    }
+  }
+  Object.assign(window, { EventSource: FakeSource });
+  window.eval(script);
+
+  const after = Number(html.match(/data-after="(\d+)"/)![1]);
+  const [first] = FakeSource.opened;
+  window.dispatchEvent(new window.Event("pagehide"));
+  expect(first.readyState).toBe(FakeSource.CLOSED);
+
+  const back = Object.assign(new window.Event("pageshow"), { persisted: true });
+  window.dispatchEvent(back);
+  expect(FakeSource.opened).toHaveLength(2);
+  expect(FakeSource.opened[1].url).toBe(`/events?after=${after}`);
 });
