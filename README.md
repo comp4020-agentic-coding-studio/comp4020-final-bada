@@ -42,15 +42,26 @@ and marks left since you last had the wall open carry a "new" badge.
 [Decision 1](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/blob/main/docs/decisions/0001-nothing-missed-while-away.md)
 records the options I weighed and what this choice costs.
 
-## What's deliberately not here yet
+## Who can do what
 
-Server-side logging (crit 11's bar, not this one), and any way to edit or
-delete a mark once it's posted. That last one
-is a real decision, not an oversight: a home-cooked app doesn't need an undo
-button its author doesn't want, and a wall where marks are permanent is a
-simpler, more honest promise than one that pretends to be moderatable. If
-that turns out wrong once real people are leaving real marks, it's cheap to
-add.
+Everyone sees the whole wall. Each person, meaning each browser, can add
+marks as themselves, and the server decides whose a mark is from the
+cookie, never from anything the page sends. Nobody can change or remove a
+mark, its author included. Every action lands in a server log as one line
+that starts with a short tag for the visitor, so the log alone can tell two
+people apart even when they type the same name.
+[Decision 2](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/blob/main/docs/decisions/0002-who-can-do-what.md)
+records what each person owns, what the log holds and what it leaves out.
+
+## What's deliberately not here
+
+Any way to edit or delete a mark once it's posted. That is a real
+decision, not an oversight: a home-cooked app doesn't need an undo button
+its author doesn't want, and a wall where marks are permanent is a simpler,
+more honest promise than one that pretends to be moderatable. It also keeps
+the live wall honest: the marks table doubles as the replay log for a
+reconnecting page, and a delete would need its own event and its own replay
+to stay right. Decision 2 says more.
 
 ## What I read to get here
 

@@ -18,10 +18,13 @@ change first --- not the other way around.
 - One SQLite file on the Fly volume (`node:sqlite`, no native dependency,
   no separate database service) is the only storage. Don't reach for a
   second store or an ORM for a schema this small.
-- Build to the crit that's currently open, not ahead of it: server-side
-  logging is crit 11's bar. Land it when that crit opens, not preemptively
-  --- a feature built early is one more thing to keep correct while the next
-  crit's actual bar goes unaddressed.
+- Build to the crit that's currently open, not ahead of it --- a feature
+  built early is one more thing to keep correct while the open crit's actual
+  bar goes unaddressed.
+- Every person-initiated action gets one `log()` line (`src/log.ts`). Log the
+  visitor tag, never the raw visitor id: the cookie is the only credential.
+  `docs/decisions/0002-who-can-do-what.md` is the access decision; change it
+  before changing who can see or do what.
 - Live updates must never silently drop a mark. A reconnect replays from the
   marks table via `Last-Event-ID`, and the server runs as one machine
   (`--ha=false`) because the listener set is in-process.
