@@ -90,3 +90,15 @@ it("can't be made to forge a second log line", () => {
   expect(line.split("\n")).toHaveLength(1);
   expect(line).toBe(`visitor=${visitorTag(id)} action=post name=${JSON.stringify(name)}`);
 });
+
+it("shows each mark's author tag, the same one the log leads with", async () => {
+  const ana1 = await visitorCookie();
+  const ana2 = await visitorCookie();
+  const one = `ana-${randomUUID()}`;
+  const two = `ana-${randomUUID()}`;
+  await post(ana1, { name: "Ana", body: one });
+  await post(ana2, { name: "Ana", body: two });
+  const html = await wall(await visitorCookie());
+  expect(itemFor(html, one)).toContain(`#${visitorTag(ana1.split("=")[1])}`);
+  expect(itemFor(html, two)).toContain(`#${visitorTag(ana2.split("=")[1])}`);
+});

@@ -1,4 +1,5 @@
 import type { Mark } from "./db.ts";
+import { visitorTag } from "./log.ts";
 
 const ESCAPES: Record<string, string> = {
   "&": "&amp;",
@@ -61,6 +62,7 @@ export function page(title: string, body: string): string {
     font-size: 0.85rem;
     color: color-mix(in srgb, currentColor 65%, transparent);
   }
+  .tag { font-family: ui-monospace, monospace; font-size: 0.8rem; }
   .badge {
     display: inline-block;
     font-size: 0.75rem;
@@ -91,7 +93,7 @@ export function markItem(mark: Mark, visitorId: string, isNew: boolean): string 
   const classes = ["mark", mine && "mine", fresh && "new"].filter(Boolean).join(" ");
   return `<li class="${classes}" data-id="${mark.id}">
   <p class="mark-body">${escapeHtml(mark.body)}</p>
-  <p class="mark-meta">${escapeHtml(mark.name)} · <time datetime="${mark.created_at}">${timeFormat.format(new Date(mark.created_at))}</time>${
+  <p class="mark-meta">${escapeHtml(mark.name)} <span class="tag" title="Same tag, same browser — it's what the log calls them">#${visitorTag(mark.visitor_id)}</span> · <time datetime="${mark.created_at}">${timeFormat.format(new Date(mark.created_at))}</time>${
     mine ? ' <span class="badge">yours</span>' : ""
   }${fresh ? ' <span class="badge">new</span>' : ""}</p>
 </li>`;

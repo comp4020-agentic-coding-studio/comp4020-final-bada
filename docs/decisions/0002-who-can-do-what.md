@@ -24,8 +24,9 @@ with separate Chrome profiles that share no cookies.
 **What each person owns.** Their marks, and the record of which marks
 they've already seen (the `visitors` table from decision 1). That's all.
 
-**What each person can see.** Every mark, with the name its author typed.
-The wall is public to the room by design. Two things are per-person, and
+**What each person can see.** Every mark, with the name its author typed
+and its author's visitor tag (below). The wall is public to the room by
+design. Two things are per-person, and
 both are worked out on the server from the cookie: which marks are
 "yours", and which are "new" since your last visit. Nobody is ever sent a
 visitor id, theirs included. The id is the only credential this app has,
@@ -66,10 +67,13 @@ when the deployed app misbehaves.
 
 ## Costs
 
-- A name is still just a label. Two people can both be "Ana" on the wall,
-  and only the log, or the "yours" badge in the author's own browser, can
-  tell them apart. For a room of a dozen people who can see each other,
-  that's fine. In a bigger room it would be the first thing to change.
+- A name is still just a label, so every mark also shows its author's tag,
+  the same one the log leads with. Two people who both type "Ana" read as
+  "Ana #3fa9c1" and "Ana #b07e22", and someone narrating from the log can
+  point at the wall and be understood. The price is linkability: anyone
+  can see that two marks under different names came from one browser. For
+  a room of a dozen that is the honest trace, not a leak, but it would
+  need rethinking for a public feed.
 - The log carries mark text (the first 60 characters). It's public on the
   wall anyway, and it makes the log readable aloud, but it means the log
   holds as much personal detail as the wall does.
@@ -92,5 +96,5 @@ keep the trace and the live feed honest with one rule.
 
 `spec/access.test.ts` checks the decision against the running app: a
 mark belongs to the cookie that posted it whatever the form says, no page
-ever shows a visitor id, a made-up id is replaced, every change or delete
+ever shows a visitor id, the tag on the wall matches the log's, a made-up id is replaced, every change or delete
 gets a 405 and leaves the mark in place, and log lines can't be forged.

@@ -48,8 +48,9 @@ Everyone sees the whole wall. Each person, meaning each browser, can add
 marks as themselves, and the server decides whose a mark is from the
 cookie, never from anything the page sends. Nobody can change or remove a
 mark, its author included. Every action lands in a server log as one line
-that starts with a short tag for the visitor, so the log alone can tell two
-people apart even when they type the same name.
+that starts with a short tag for the visitor, and the wall shows that same
+tag beside each name, so two people who type the same name can still be told
+apart, on the wall and in the log alike.
 [Decision 2](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/blob/main/docs/decisions/0002-who-can-do-what.md)
 records what each person owns, what the log holds and what it leaves out.
 
