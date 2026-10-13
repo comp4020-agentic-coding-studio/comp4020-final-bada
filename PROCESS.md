@@ -77,3 +77,41 @@ dead after the real server came back. `src/live.js` now reopens a closed
 stream itself, with backoff, from the newest mark on the page, and a jsdom
 test against the served page goes red without the fix
 ([`1d9d157`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/1d9d157ed5275231ac9e2bfa925425e2f0b4145c)).
+
+## Crit 10: fly by instruments
+
+Crit 10 asks the app to tell two people apart, enforce on the server what
+each can see and change, and log well enough that I can narrate a two-person
+session without touching the app. Marks already had a person: a random id
+in a cookie. The work was deciding what that id is for, and making the log
+say it. Every action writes one logfmt line led by `visitor=<tag>`, the first
+six hex digits of a SHA-256 of the id. The tag is stable enough to group one
+person's lines and one-way, so a log on a projector can't be used to take
+over anyone's marks. The same commit refuses hand-set ids like
+`visitor=alice` and answers every `PUT`/`PATCH`/`DELETE` with a 405 that gets
+logged
+([`d01b01c`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/d01b01c13f9d6cf631ff91ec1f9b2b032c64d848)).
+ADR 0002 records the rule and its costs
+([`3e1de0e`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/3e1de0e6baa18b55e77e8635f7662a40aaf5c0e5)).
+
+Most of what came after that came from rehearsing the crit itself. I played a scripted
+two-person session in separate browser profiles, then gave a fresh subagent
+only the server log and asked it to say who did what. Its account was right
+in outline, and it counted one person as two listeners. Chrome's
+back/forward cache keeps a page you leave via a link alive with its
+`EventSource` still open, so the server kept delivering to a hidden page and
+marking those marks as seen. That person's next real visit then badged
+nothing as new. No playtest or spec had caught it, because both only ever looked at the
+page that was showing. The page now closes its stream on `pagehide` and
+catches up from the newest mark on `pageshow`
+([`b7c064d`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/b7c064ddf368c54a5ecfe1d93c4868b0cff83173)).
+The same narration showed where the log made the reader work. To tell an
+attempt on someone else's mark from one on your own, it had to cross-reference
+mark ids, and it couldn't say whether the second person saw a post arrive. A
+`post` line now carries `delivered=<n>`, and a refused change carries the
+target mark's `owner=` tag
+([`e2dce83`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/e2dce83e9e98c74a1ec8044aabe2e54331098d3a)).
+Last, the wall shows each mark's tag beside its name, so two people who
+both type "Ana" are distinguishable there too, and the narrator can point
+from a log line to the mark on screen
+([`3ebd943`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/3ebd943e4b9fb9d373a4c6aee36e182ecc52f7c0)).
