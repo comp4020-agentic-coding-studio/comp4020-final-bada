@@ -54,7 +54,8 @@ lines group together, and one-way, so a log on a projector can't be used to
 take over someone's marks. Values are JSON-quoted, so a name with a newline
 in it can't forge a second line. The actions are `arrive` (a new cookie),
 `view`, `post`, `post-refused`, `live-open`/`live-close`, `readme`,
-`refused` and `not-found`. A pod member typing someone else's name shows up
+`refused`, `not-found` and `error` (a request that
+threw, with its message). A pod member typing someone else's name shows up
 as the same `name=` under a different `visitor=`, which is the whole point.
 Two fields answer the questions a narrator otherwise has to work out by
 cross-referencing: a `post` carries `delivered=<n>`, the number of other
