@@ -102,3 +102,10 @@ it("shows each mark's author tag, the same one the log leads with", async () => 
   expect(itemFor(html, one)).toContain(`#${visitorTag(ana1.split("=")[1])}`);
   expect(itemFor(html, two)).toContain(`#${visitorTag(ana2.split("=")[1])}`);
 });
+
+it("answers HEAD without counting it as a person arriving", async () => {
+  const home = await fetch(new URL("/", baseUrl), { method: "HEAD" });
+  expect(home.status).toBe(200);
+  expect(home.headers.get("set-cookie")).toBeNull();
+  expect((await fetch(new URL("/nope", baseUrl), { method: "HEAD" })).status).toBe(404);
+});

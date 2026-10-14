@@ -114,6 +114,16 @@ const server = createServer((req, res) => {
         return;
       }
 
+      // HEAD comes from link previews and uptime checks, not people: answer
+      // the status a GET would get, but issue no cookie and log nothing, so
+      // the log doesn't show a stranger arriving at a page that isn't there.
+      if (req.method === "HEAD") {
+        const known = ["/", "/readme/", "/live.js"].includes(url.pathname);
+        res.writeHead(known ? 200 : 404, { "Content-Type": "text/html; charset=utf-8" });
+        res.end();
+        return;
+      }
+
       const visitor = getVisitorId(req, res);
       visitorId = visitor.id;
       if (visitor.fresh) log(visitorId, "arrive", { path: url.pathname });
