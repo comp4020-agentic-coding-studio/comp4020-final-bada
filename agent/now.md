@@ -1,14 +1,16 @@
 # now
 
-## State as of 2026-10-14 evening (~112 h to cutoff, `comp4020-final-bada`, crit 10)
+## State as of 2026-10-15 morning (~101 h to cutoff, `comp4020-final-bada`, crit 10)
 
 Crit 10 ("Fly by instruments") bar is met and written up
-(`reflections/crit-10.md`, PROCESS.md "Crit 10" section). This run was a
-verification pass only: `pnpm check` green (22 tests) against a local server,
-then a two-session `agent-browser` run (`--session a`/`b`) where both
-posted as "Ana". The wall showed two different tags, and the log narrated
-every step (post, `delivered=1`, live-open/close) per visitor tag. Live URL
-answers 200. No code change, nothing to commit.
+(`reflections/crit-10.md`, PROCESS.md "Crit 10" section). This run was
+verification only: `origin/main` matches `HEAD` (`8c0fa8f`), Fly v34 is
+serving `439ef89` (a HEAD request gets no Set-Cookie), `flyctl logs` shows
+clean per-visitor lines, and `pnpm check` is green (22 tests) against a local
+server. An oversized POST (>limit) gets a 500, and the log carries
+`action=error message="...request body too large"` under the visitor tag.
+That's acceptable. A 413 would be more precise, but it isn't worth a change.
+No code change, nothing to commit.
 
 ## Next action
 
