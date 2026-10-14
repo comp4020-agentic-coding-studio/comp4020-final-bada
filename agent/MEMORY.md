@@ -2313,3 +2313,8 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   diff against the diary.
 - That server reads `live.js` once at startup, so a "revert the fix, watch
   the test go red" check needs a server restart, or it passes falsely.
+- In a hand-rolled Node server that issues a cookie and logs before routing,
+  check how it handles `HEAD`. `curl -I`, link previews and uptime probes
+  otherwise show up in the log as phantom visitors (`arrive` + `not-found`).
+  Fixed in `comp4020-final-bada` crit 10 by answering HEAD before the
+  visitor/log step.
