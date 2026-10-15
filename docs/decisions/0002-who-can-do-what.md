@@ -64,7 +64,10 @@ mark carries `mark=` and `owner=<tag>`, so an attempt on someone else's
 mark reads as one.
 
 The logging stays after the crit. It's what I, or an agent, read first
-when the deployed app misbehaves.
+when the deployed app misbehaves. `flyctl logs` only holds a few hours, so
+every line is also appended, timestamped, to `/data/actions.log` on the
+volume, which survives restarts and redeploys:
+`flyctl ssh console -a comp4020-final-bada -C "tail -n 100 /data/actions.log"`.
 
 ## Costs
 
@@ -78,6 +81,9 @@ when the deployed app misbehaves.
 - The log carries mark text (the first 60 characters). It's public on the
   wall anyway, and it makes the log readable aloud, but it means the log
   holds as much personal detail as the wall does.
+- The file on the volume is never rotated. At roughly 100 bytes a line, a
+  1 GB volume holds about ten million actions, far past a dozen people's
+  semester; a busier app would need rotation.
 - A browser is a person only until it isn't. Clear cookies or switch
   device and you're someone new, with no way back to your old marks'
   "yours" badges. Accounts would fix this, and the README says why I don't

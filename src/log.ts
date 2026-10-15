@@ -1,8 +1,14 @@
 import { createHash } from "node:crypto";
+import { appendFileSync } from "node:fs";
 
 // One line per thing a person does, to stdout, which is what `flyctl logs`
 // tails. Each line leads with who did it, so two people using the app at once
 // can be told apart by reading the log alone.
+//
+// Fly keeps only a few hours of stdout, so every line also goes, timestamped,
+// to a file on the volume, which outlives restarts and redeploys. Read it with
+// `flyctl ssh console -a <app> -C "tail -n 100 /data/actions.log"`.
+const LOG_FILE = `${process.env.DATA_DIR ?? "/data"}/actions.log`;
 
 const EXCERPT = 60;
 
@@ -31,5 +37,12 @@ export function logLine(visitorId: string, action: string, fields: Record<string
 }
 
 export function log(visitorId: string, action: string, fields?: Record<string, Value>): void {
-  console.log(logLine(visitorId, action, fields));
+  const line = logLine(visitorId, action, fields);
+  console.log(line);
+  // A full or missing volume loses the durable copy, never the request.
+  try {
+    appendFileSync(LOG_FILE, `${new Date().toISOString()} ${line}\n`);
+  } catch (err) {
+    console.error(`couldn't append to ${LOG_FILE}: ${String(err)}`);
+  }
 }
