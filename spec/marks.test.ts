@@ -60,3 +60,13 @@ it("issues a fresh visitor cookie per anonymous request", async () => {
   expect(b.setCookie).toMatch(/^visitor=/);
   expect(a.setCookie).not.toBe(b.setCookie);
 });
+
+it("refuses an oversized post with 413, not a server error", async () => {
+  const res = await fetch(new URL("/", baseUrl), {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ name: "Big", body: "x".repeat(20_000) }).toString(),
+    redirect: "manual",
+  });
+  expect(res.status).toBe(413);
+});

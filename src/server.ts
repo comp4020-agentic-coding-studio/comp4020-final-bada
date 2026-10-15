@@ -62,12 +62,14 @@ function hasVisibleContent(s: string): boolean {
   return /[^\s\p{Cf}]/u.test(s);
 }
 
-async function readBody(req: IncomingMessage): Promise<string> {
+// Undefined when the body is over the limit: that's the sender's doing, not
+// a server fault, so it's refused rather than logged as an error.
+async function readBody(req: IncomingMessage): Promise<string | undefined> {
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of req as AsyncIterable<Buffer>) {
     size += chunk.length;
-    if (size > MAX_REQUEST_BYTES) throw new Error("request body too large");
+    if (size > MAX_REQUEST_BYTES) return undefined;
     chunks.push(chunk);
   }
   return Buffer.concat(chunks).toString("utf8");
@@ -157,6 +159,12 @@ const server = createServer((req, res) => {
 
       if (req.method === "POST" && url.pathname === "/") {
         const raw = await readBody(req);
+        if (raw === undefined) {
+          log(visitorId, "post-refused", { reason: "too large" });
+          res.writeHead(413, { Connection: "close", "Content-Type": "text/plain; charset=utf-8" });
+          res.end("that's too long to post");
+          return;
+        }
         const params = new URLSearchParams(raw);
         const name = (params.get("name") ?? "").trim().slice(0, MAX_NAME);
         const body = (params.get("body") ?? "").trim().slice(0, MAX_BODY);
