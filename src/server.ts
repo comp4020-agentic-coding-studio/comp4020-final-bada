@@ -4,7 +4,7 @@ import { marked } from "marked";
 import { getCookie, getVisitorId, setCookie } from "./cookies.ts";
 import { escapeHtml, markItem, marksList, page } from "./render.ts";
 import { getMark, getSeen, insertMark, listMarks, markSeen, marksAfter, type Mark } from "./db.ts";
-import { excerpt, log, visitorTag } from "./log.ts";
+import { agentLabel, excerpt, log, visitorTag } from "./log.ts";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const MAX_NAME = 40;
@@ -128,7 +128,7 @@ const server = createServer((req, res) => {
 
       const visitor = getVisitorId(req, res);
       visitorId = visitor.id;
-      if (visitor.fresh) log(visitorId, "arrive", { path: url.pathname });
+      if (visitor.fresh) log(visitorId, "arrive", { path: url.pathname, agent: agentLabel(req.headers["user-agent"]) });
 
       if (req.method === "GET" && url.pathname === "/") {
         const lastName = getCookie(req, "name") ?? "";

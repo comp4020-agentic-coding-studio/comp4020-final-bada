@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, inject, it } from "vitest";
-import { logLine, visitorTag } from "../src/log.ts";
+import { agentLabel, logLine, visitorTag } from "../src/log.ts";
 
 // Crit 10's bar: the server, not the page, decides what each person can see
 // and change (docs/decisions/0002-who-can-do-what.md), and the log tells two
@@ -108,4 +108,14 @@ it("answers HEAD without counting it as a person arriving", async () => {
   expect(home.status).toBe(200);
   expect(home.headers.get("set-cookie")).toBeNull();
   expect((await fetch(new URL("/nope", baseUrl), { method: "HEAD" })).status).toBe(404);
+});
+
+it("labels a first visit's browser coarsely, so a probe reads differently from a person", () => {
+  const chrome =
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
+  expect(agentLabel(chrome)).toBe("chrome");
+  expect(agentLabel("Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15")).toBe("safari");
+  expect(agentLabel("curl/8.5.0")).toBe("script");
+  expect(agentLabel("Slackbot-LinkExpanding 1.0")).toBe("bot");
+  expect(agentLabel(undefined)).toBe("none");
 });

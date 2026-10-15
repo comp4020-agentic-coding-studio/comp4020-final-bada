@@ -61,7 +61,11 @@ Two fields answer the questions a narrator otherwise has to work out by
 cross-referencing: a `post` carries `delivered=<n>`, the number of other
 people's open pages it reached live, and a `refused` aimed at an existing
 mark carries `mark=` and `owner=<tag>`, so an attempt on someone else's
-mark reads as one.
+mark reads as one. An `arrive` carries `agent=`, a coarse browser label
+(`chrome`, `safari`, `script`, `bot`), because the live log showed an
+hourly probe arriving as a fresh visitor each time, indistinguishable
+from a person without it. It's coarse on purpose: the browser family is
+enough to narrate from, and a full User-Agent is a fingerprint.
 
 The logging stays after the crit. It's what I, or an agent, read first
 when the deployed app misbehaves. `flyctl logs` only holds a few hours, so

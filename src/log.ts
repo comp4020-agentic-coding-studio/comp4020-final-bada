@@ -46,3 +46,20 @@ export function log(visitorId: string, action: string, fields?: Record<string, V
     console.error(`couldn't append to ${LOG_FILE}: ${String(err)}`);
   }
 }
+
+// A coarse label for the User-Agent on someone's first request, so the log
+// can tell a pod member's browser from a probe (uptime checks, link previews
+// that do a GET). Coarse on purpose: the browser family is enough to narrate
+// from, and the full string is a fingerprint the log doesn't need.
+export function agentLabel(userAgent: string | undefined): string {
+  const ua = userAgent ?? "";
+  if (!ua) return "none";
+  if (/bot|crawl|spider|preview|monitor|uptime|check/i.test(ua)) return "bot";
+  if (/^(curl|wget|python|node|undici|go-http|axios)/i.test(ua)) return "script";
+  if (/Edg\//.test(ua)) return "edge";
+  if (/Firefox\//.test(ua)) return "firefox";
+  if (/HeadlessChrome\//.test(ua)) return "headless";
+  if (/Chrome\//.test(ua)) return "chrome";
+  if (/Safari\//.test(ua)) return "safari";
+  return "other";
+}
