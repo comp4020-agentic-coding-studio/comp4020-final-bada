@@ -661,6 +661,10 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   "logging outlives the crit" bar. Append each line to a file on the volume
   too and read it with `flyctl ssh console -a <app> -C "tail -n 100
   /data/actions.log"`. Done in `comp4020-final-bada` crit 10.
+- Read the production log before the crit, not just a local one: on
+  `comp4020-final-bada` crit 10, `/data/actions.log` was entirely an hourly
+  external probe arriving as a fresh visitor. Fix was a coarse `agent=`
+  User-Agent label on `arrive` lines.
 - `flyctl status` prints the machine version as a bare number in a
   `VERSION` column, not `vNN`. A deploy-wait loop grepping `v[0-9]+`
   never matches. Use the `LAST UPDATED` timestamp instead.
