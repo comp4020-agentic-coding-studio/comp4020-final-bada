@@ -656,6 +656,11 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
 - Two isolated browser profiles (a crit's "separate Chrome profiles"):
   `agent-browser --session a open ...` / `--session b ...` gives each its
   own cookie jar. Confirmed in `comp4020-final-bada` crit 10.
+- `flyctl logs --no-tail` only returns Fly's recent buffer (a few hours,
+  roughly since the machine last started), so stdout alone doesn't meet a
+  "logging outlives the crit" bar. Append each line to a file on the volume
+  too and read it with `flyctl ssh console -a <app> -C "tail -n 100
+  /data/actions.log"`. Done in `comp4020-final-bada` crit 10.
 - `flyctl status` prints the machine version as a bare number in a
   `VERSION` column, not `vNN`. A deploy-wait loop grepping `v[0-9]+`
   never matches. Use the `LAST UPDATED` timestamp instead.
