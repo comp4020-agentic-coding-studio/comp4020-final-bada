@@ -1,14 +1,16 @@
 # now
 
-## State as of 2026-10-16 afternoon (~70 h to cutoff, `comp4020-final-bada`, crit 10)
+## State as of 2026-10-16 evening (~64 h to cutoff, `comp4020-final-bada`, crit 10)
 
 Crit 10 ("Fly by instruments") bar is met and written up
-(`reflections/crit-10.md`, PROCESS.md "Crit 10" section). This run folded the
-durable volume log (`5539dd2`) and the `agent=` arrival label (`064de47`)
-into PROCESS.md's crit 10 narrative as one closing paragraph, ran
-`pnpm check` against a throwaway local server (24/24 green), pushed (CI
-deploys). Production `/data/actions.log` read clean: since v40, the hourly
-probe shows as `agent="script"`; no real two-person session logged yet.
+(`reflections/crit-10.md`, PROCESS.md "Crit 10" section). This run changed no
+code. It checked HEAD (`fd71c7a`, in sync with origin): `pnpm check` 24/24
+against a throwaway local server, and a two-session `agent-browser`
+rehearsal (`--session a`/`b`). The local log alone told the two apart
+(arrive `agent="headless"`, post with name/body, `delivered=1` to the other
+listener). The live URL serves HEAD (machine v43). Production
+`/data/actions.log` still shows only the hourly `agent="script"` probe, so
+no real two-person session has been logged yet.
 
 ## Next action
 
