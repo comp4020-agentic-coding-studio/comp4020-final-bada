@@ -115,3 +115,11 @@ Last, the wall shows each mark's tag beside its name, so two people who
 both type "Ana" are distinguishable there too, and the narrator can point
 from a log line to the mark on screen
 ([`3ebd943`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/3ebd943e4b9fb9d373a4c6aee36e182ecc52f7c0)).
+The brief wants the logging to outlast the crit, and `flyctl logs` only
+holds a few hours, so every line is also appended to a file on the volume
+([`5539dd2`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/5539dd2b9c633027bed76cec616d3522189c3dfa)).
+Reading that file before the crit, rather than a local one, showed it was
+almost all an hourly probe arriving as a new visitor each time, which a
+narrator would have read as a stream of strangers. An `arrive` line now
+carries a coarse `agent=` label such as `chrome` or `script`
+([`064de47`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/064de479fdd4523d4192855bbc5a8d58ff092481)).
