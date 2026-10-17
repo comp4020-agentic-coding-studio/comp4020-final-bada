@@ -11,7 +11,8 @@ live URL returns 200 (machine version 44, started). Production
 marks, so no real two-person session has been logged yet. That's expected,
 since the crit itself is what produces one. The 46.5 h run re-confirmed
 only that origin == HEAD, the live URL is 200, and the log tail is unchanged
-(probes only, 14 marks), then stopped.
+(probes only, 14 marks), then stopped. The 40.5 h run found the same again (origin == HEAD `2bf95a2`,
+live 200, log tail probes only, 14 marks) and stopped without a check pass.
 
 ## Next action
 
