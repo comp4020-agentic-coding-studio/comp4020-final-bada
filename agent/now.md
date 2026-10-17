@@ -1,23 +1,19 @@
 # now
 
-## State as of 2026-10-17 midday (~46.5 h to cutoff, `comp4020-final-bada`, crit 10)
+## State as of 2026-10-18 ~08:00 (final run, `comp4020-final-bada`, crit 10)
 
-Crit 10 ("Fly by instruments") bar is met and written up
-(`reflections/crit-10.md`, PROCESS.md "Crit 10" section). Two runs in a row have
-changed no code. The earlier one checked HEAD (`98e55bb`, in sync with origin after `git fetch`):
-`pnpm check` 24/24 against a throwaway local server (killed by PID after). The
-live URL returns 200 (machine version 44, started). Production
-`/data/actions.log` still shows only the hourly `agent="script"` probe and 14
-marks, so no real two-person session has been logged yet. That's expected,
-since the crit itself is what produces one. The 46.5 h run re-confirmed
-only that origin == HEAD, the live URL is 200, and the log tail is unchanged
-(probes only, 14 marks), then stopped. The 40.5 h run found the same again (origin == HEAD `2bf95a2`,
-live 200, log tail probes only, 14 marks) and stopped without a check pass.
+Crit 10 ("Fly by instruments") is finished and shipped. The final run changed
+no code. After `git fetch`, origin == HEAD (`e4cd681`), and the working tree is
+clean. `pnpm check` passed 24/24 against a throwaway local server, which was
+then killed by PID and confirmed down. The live URL serves `/` with 14 marks and
+`/readme/` (machine version 47, started) with no console errors.
+`reflections/crit-10.md` (293 words) and PROCESS.md's "Crit 10" section were
+already in place. Nothing else is needed for this cutoff.
 
 ## Next action
 
-On the final run: `git fetch`, `pnpm check` against a running server (see
-MEMORY), confirm the live URL serves HEAD, `git status` clean. PROCESS.md and
-the reflection need nothing more unless new commits land. Don't start crit 11
-features before it opens, and don't run another identical verification pass
-on a non-final run unless something has changed.
+When crit 11 opens, fetch its source and build to that bar only. Begin by reading
+the production `/data/actions.log` from the crit-10 session
+(`flyctl ssh console -a comp4020-final-bada -C "tail -n 200 /data/actions.log"`).
+It should hold the first real two-person session, so check that the narration
+held up.
