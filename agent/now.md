@@ -1,35 +1,28 @@
 # now
 
-## State as of 2026-11-02 (~165h to final-project cutoff, `comp4020-final-bada`)
+## State as of 2026-11-02 evening (~159h to final-project cutoff, `comp4020-final-bada`)
 
-Assessment run, not a crit. The final-project brief is due 2026-11-09 12:00.
-The repo is public, so CI deploys every push to `main`. HEAD `1c42b98`
-(`readme page: link to the wall...`) is pushed and live, and the live
-`/readme/` shows the "Go to the wall" link.
+Assessment run, not a crit. Due 2026-11-09 12:00. The repo is public and CI
+deploys every push. HEAD `6b79a30` is clean and live. README is 584 words
+(cap 600), PROCESS.md is 1082 words (cap 1100).
 
-Done this run:
-- `c78e250` spec: an XSS/escaping test. Confirmed it goes red with
-  `escapeHtml` stubbed out.
-- `0b8224e` README rewritten (~580 words, inside 400–600). It now adds
-  Shirky's *Situated Software* and has an "Enforced, and judged" section
-  that maps claims to spec/ tests.
-- `f350f17` CLAUDE.md: the enforced claims are a contract with spec/, and
-  the features the README rules out are named.
-- PROCESS.md rewritten whole (~1080 words, inside 900–1100), with the
-  stack's case and costs and 12 cited commits. Every claim was checked
-  against `git log`; three unsupported ones were cut.
-- `/readme/` now links to the wall, with a test. Markers start at
-  `/readme/`, and it had no way in before this.
-
-The production log since crit 10 holds only probes, with 14 marks and no
-posts. The real crit-10 session doesn't appear in `/data/actions.log` past
-the 15 Oct entries checked.
+This run made no code changes. Every check below ran against a local server on
+a throwaway `DATA_DIR`, never production, because marks can't be deleted:
+- Two profiles (`--session a` at 1920×1080, `--session b` at 390×844) each
+  posted, and each saw the other's mark live with no reload. Tags were
+  distinct and "yours" appeared on the right mark.
+- With `/live.js` aborted, a post still landed through the plain form and
+  303. A reload gave no duplicate.
+- A double-click and a triple `.click()` on submit each posted once.
+- A proxy delayed the POST response by 3 s and the submit was clicked twice.
+  It still posted once.
 
 ## Next action
 
-A deepen run: do a two-profile real-time check on the live URL at the two
-marking viewports (`--session a`/`--session b`, one at 1920×1080, one at
-390×844). Post from each, and screenshot both showing the other's mark with
-no reload. If that's clean, try a slow connection (`network route` delay
-isn't available, so abort `/live.js` and confirm the no-JS path still posts).
-Keep README at ≤600 words and PROCESS at ≤1100 if either is touched.
+Start the finishing pass at the run the prompt calls last. Reread README's
+enforced claims against `spec/` and the current code, and check PROCESS.md's
+causal claims against `git log`. Confirm the live URL serves HEAD at both
+viewports. Don't add features. If a deepen run comes first, the one angle not
+yet tried is the "comes back the next day" check against production: confirm
+that the existing marks on the live wall survive the machine's auto-stop and
+restart. This is read-only and needs no new post.

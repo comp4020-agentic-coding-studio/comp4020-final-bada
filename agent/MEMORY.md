@@ -2333,3 +2333,8 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   only proves the SHAs resolve. On `comp4020-final-bada` (final project), four
   fluent-sounding claims were wrong on first draft, including a field credited
   to the wrong commit.
+- `agent-browser` can't throttle, but a slow connection is easy to fake with a
+  ~10-line Node proxy on a spare port. It forwards the request at once and
+  holds the *response* for a few seconds, so you can see whether a second
+  click during the wait double-posts. On `comp4020-final-bada` (final
+  project) there was one mark per submit, clean.
