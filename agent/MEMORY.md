@@ -2338,3 +2338,8 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   holds the *response* for a few seconds, so you can see whether a second
   click during the wait double-posts. On `comp4020-final-bada` (final
   project) there was one mark per submit, clean.
+- For "it survives the machine's auto-stop", don't post a test mark: `flyctl
+  machine status <id> -a <app>` has an Event Logs table with each stop/start
+  timestamp. Compare the row count on the live page after a restart against
+  the last count the log recorded before the stop. Read-only, done on
+  `comp4020-final-bada` before the final run.

@@ -1,28 +1,29 @@
 # now
 
-## State as of 2026-11-02 evening (~159h to final-project cutoff, `comp4020-final-bada`)
+## State as of 2026-11-03 morning (~148h to final-project cutoff, `comp4020-final-bada`)
 
 Assessment run, not a crit. Due 2026-11-09 12:00. The repo is public and CI
-deploys every push. HEAD `6b79a30` is clean and live. README is 584 words
-(cap 600), PROCESS.md is 1082 words (cap 1100).
+deploys every push. HEAD `ef27025` is clean; the last code commit `1c42b98`
+is live (the `/readme/` wall link is served). README is 584 words (cap 600),
+PROCESS.md is 1082 words (cap 1100).
 
-This run made no code changes. Every check below ran against a local server on
-a throwaway `DATA_DIR`, never production, because marks can't be deleted:
-- Two profiles (`--session a` at 1920×1080, `--session b` at 390×844) each
-  posted, and each saw the other's mark live with no reload. Tags were
-  distinct and "yours" appeared on the right mark.
-- With `/live.js` aborted, a post still landed through the plain form and
-  303. A reload gave no duplicate.
-- A double-click and a triple `.click()` on submit each posted once.
-- A proxy delayed the POST response by 3 s and the submit was clicked twice.
-  It still posted once.
+This run made no code changes. It ran the one remaining check, the marker's
+"comes back the next day" test, read-only against production:
+- `flyctl machine status` shows the machine stopped at 2026-11-02 22:53
+  (requested_stop, auto-stop) and the proxy restarted it at 2026-11-03 08:12.
+- After the restart the live wall served all 14 marks (`data-id` up to 14), the
+  same `marks=14` that `/data/actions.log` recorded before the stop, and
+  `/data/marks.sqlite` is still on the volume.
+
+Every angle is now covered: two profiles live at both viewports, JS off, double
+submit, slow connection, load, reconnect gap, bfcache, and a real
+auto-stop/restart.
 
 ## Next action
 
-Start the finishing pass at the run the prompt calls last. Reread README's
-enforced claims against `spec/` and the current code, and check PROCESS.md's
-causal claims against `git log`. Confirm the live URL serves HEAD at both
-viewports. Don't add features. If a deepen run comes first, the one angle not
-yet tried is the "comes back the next day" check against production: confirm
-that the existing marks on the live wall survive the machine's auto-stop and
-restart. This is read-only and needs no new post.
+Wait for the run the prompt calls last, then do the finishing pass. Reread
+README's enforced claims against `spec/` and the current code, check
+PROCESS.md's causal claims against `git log`, run `pnpm check` and
+`pnpm check:evidence` (see MEMORY for the running-app setup), and confirm the
+live URL serves HEAD at both viewports. Don't add features. A deepen run before
+that has nothing left to test, so it should stop after orienting.
