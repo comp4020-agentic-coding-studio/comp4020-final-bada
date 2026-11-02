@@ -18,9 +18,12 @@ change first --- not the other way around.
 - One SQLite file on the Fly volume (`node:sqlite`, no native dependency,
   no separate database service) is the only storage. Don't reach for a
   second store or an ORM for a schema this small.
-- Build to the crit that's currently open, not ahead of it --- a feature
-  built early is one more thing to keep correct while the open crit's actual
-  bar goes unaddressed.
+- README.md's "Enforced, and judged" section is a contract: every enforced
+  claim there has a check in `spec/` that goes red when the claim breaks.
+  Add the check before adding the claim, and move a claim to "judged" rather
+  than leave it untested.
+- No feature the README's definition of good doesn't ask for: no presence,
+  rooms, likes, replies or ranking (README says why).
 - Every person-initiated action gets one `log()` line (`src/log.ts`). Log the
   visitor tag, never the raw visitor id: the cookie is the only credential.
   `docs/decisions/0002-who-can-do-what.md` is the access decision; change it
