@@ -1,75 +1,73 @@
 # Marks
 
-Marks is a shared noticeboard for a small, specific room: my crit group, and
-whoever else visits this repo. Type a name and a short line, and it joins
-everyone else's on the wall --- visible the moment you post it, and still
-there the next time you're back.
+Marks is a shared noticeboard for one small room: my crit group, and whoever
+is standing at the showcase screen. Type a name and a short line, and it
+joins everyone else's on the wall, on every open page within a second, and
+it's still there when you come back.
 
 ## What good means here
 
-Good, for this app, isn't "used by many people." [Robin Sloan's *An App Can
-Be a Home-Cooked Meal*](https://www.robinsloan.com/notes/home-cooked-app/)
-argues that software doesn't need scale or a business model to be worth
-building --- it can be made, like a meal, for people you actually know, and
-judged by whether it serves them rather than whether it grows. Marks is built
-the same way: for a room of maybe a dozen people at most, not a public feed.
-[Ink & Switch's *Malleable
-Software*](https://www.inkandswitch.com/essay/malleable-software/) frames the
-same idea at a different scale --- a luthier's workshop, tools built and
-rearranged for exactly the work in front of them --- and that's the standard
-I'm holding the schema to: the smallest shape that carries the one
-interaction this crit needs, not a guess at what a later crit might want.
+Good, for Marks, is an honest trace kept for a room you could name. Robin
+Sloan's [*An App Can Be a Home-Cooked
+Meal*](https://www.robinsloan.com/notes/home-cooked-app/) argues that
+software made for people you know is judged by whether it serves them, not
+whether it grows. Clay Shirky's [*Situated
+Software*](https://gwern.net/doc/technology/2004-03-30-shirky-situatedsoftware.html)
+makes the same point from the other side: software for "dozens of users, an
+absurd target population," can lean on the group instead of building
+machinery to stand in for it. [Ink & Switch's *Malleable
+Software*](https://www.inkandswitch.com/essay/malleable-software/) sets the
+standard for the code: the smallest shape that does the job in front of it.
 
-So: no accounts. A visitor is a random id in a cookie, set the first time
-they show up --- good enough to tell two people apart, and to know a mark is
-"yours" when you're back, but not to verify who anyone is. A name is just a
-label someone types; two people can call themselves the same thing, and
-that's fine for a room this size. The wall doesn't paginate, filter, or rank
---- it's short enough, for now, that reading top to bottom is the whole
-interface.
+Three things follow. First, a person is a browser. A random id in a cookie
+tells two people apart, and a short tag beside each name lets you tell two
+people called Ana apart; a room this size doesn't need accounts to know who
+it's talking to. Second, a mark is permanent. Nobody can edit or delete one,
+its author included, because a wall that lets the past be quietly rewritten
+isn't a trace. Third, being live must never cost you a mark. A page that
+drops its connection is sent whatever it missed, and a mark left since your
+last visit carries a "new" badge.
 
-## Live, and what you missed
+## Enforced, and judged
 
-The wall is live. A mark someone leaves appears on every other open page
-within about a second, with no reload. With JavaScript off it still works
-the old way: post, and the page reloads with everything on it.
+These are checked by `pnpm check` against the running app, in `spec/`:
 
-Being live raises a question a static wall never had: what happens to a mark
-left while you weren't quite there, whether your connection dropped for a
-few seconds or you closed the tab until tomorrow? The answer here is that
-nothing is silently dropped. A reconnecting page is sent whatever it missed,
-and marks left since you last had the wall open carry a "new" badge.
-[Decision 1](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/blob/main/docs/decisions/0001-nothing-missed-while-away.md)
-records the options I weighed and what this choice costs.
+- a mark belongs to the cookie that posted it, whatever the form says, and
+  no page ever shows anyone's visitor id
+- every attempt to change or delete a mark is refused, its author's too
+- a name or mark is shown as text, never as markup, and a blank one (even
+  one made of invisible characters) is refused
+- another person's mark reaches an open page within a second, a dropped
+  connection is replayed what it missed, and the "new" badge appears once
+- the tag beside a name is the one the server log leads with, and the log
+  can't be forged by a name with a newline in it
 
-## Who can do what
-
-Everyone sees the whole wall. Each person, meaning each browser, can add
-marks as themselves, and the server decides whose a mark is from the
-cookie, never from anything the page sends. Nobody can change or remove a
-mark, its author included. Every action lands in a server log as one line
-that starts with a short tag for the visitor, and the wall shows that same
-tag beside each name, so two people who type the same name can still be told
-apart, on the wall and in the log alike.
-[Decision 2](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/blob/main/docs/decisions/0002-who-can-do-what.md)
-records what each person owns, what the log holds and what it leaves out.
+These are judged, not tested: whether the wall reads well at a phone's
+width and a projector's, and whether a stranger can post without being told
+how. I judge them by playing two-person sessions in separate browser
+profiles at both sizes, then having someone with only the server log say
+who did what. That rehearsal found a real bug no test had: a page Chrome
+cached away kept receiving marks, so they were never badged new.
 
 ## What's deliberately not here
 
-Any way to edit or delete a mark once it's posted. That is a real
-decision, not an oversight: a home-cooked app doesn't need an undo button
-its author doesn't want, and a wall where marks are permanent is a simpler,
-more honest promise than one that pretends to be moderatable. It also keeps
-the live wall honest: the marks table doubles as the replay log for a
-reconnecting page, and a delete would need its own event and its own replay
-to stay right. Decision 2 says more.
+No edit or delete, as above. No presence list, because the wall is about
+what stays after people leave, not who is here now. No rooms, likes,
+replies or ranking: the wall is short enough to read top to bottom, and
+that's the whole interface. Without JavaScript it still works, post and
+reload.
 
-## What I read to get here
+## Decisions and sources
 
+- [Decision 1: nothing missed while
+  away](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/blob/main/docs/decisions/0001-nothing-missed-while-away.md)
+- [Decision 2: who can see and do
+  what](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/blob/main/docs/decisions/0002-who-can-do-what.md)
 - Robin Sloan, [*An App Can Be a Home-Cooked
-  Meal*](https://www.robinsloan.com/notes/home-cooked-app/) and its
-  [five-year follow-up](https://www.robinsloan.com/lab/five-years-of-home-cooked-apps/)
+  Meal*](https://www.robinsloan.com/notes/home-cooked-app/) and [*Five years
+  of home-cooked apps*](https://www.robinsloan.com/lab/five-years-of-home-cooked-apps/)
+- Clay Shirky, [*Situated
+  Software*](https://gwern.net/doc/technology/2004-03-30-shirky-situatedsoftware.html)
+  (2004)
 - Ink & Switch, [*Malleable
   Software*](https://www.inkandswitch.com/essay/malleable-software/)
-- the final project brief's own pointers toward the small web and games made
-  for a handful of friends, which sent me looking for both of the above
