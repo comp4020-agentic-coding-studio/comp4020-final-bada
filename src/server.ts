@@ -191,7 +191,8 @@ const server = createServer((req, res) => {
         const md = readFileSync("README.md", "utf8");
         const html = await marked.parse(md);
         res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-        res.end(page("About this app", `<main>${html}</main>`));
+        // Markers arrive here first, so the way in to the wall is at the top.
+        res.end(page("About this app", `<nav><p><a href="/">Go to the wall and leave a mark →</a></p></nav>\n<main>${html}</main>`));
         log(visitorId, "readme");
         return;
       }

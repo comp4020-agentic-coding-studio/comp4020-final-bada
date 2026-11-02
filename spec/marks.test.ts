@@ -80,3 +80,8 @@ it("shows markup in a name or mark as text, never as markup", async () => {
   expect(item).toContain(`&lt;script&gt;alert(&quot;${marker}&quot;)&lt;/script&gt;`);
   expect(item).not.toMatch(/<(script|img|b)\b/);
 });
+
+it("links from /readme/, where a newcomer starts, to the wall", async () => {
+  const html = await (await fetch(new URL("/readme/", baseUrl))).text();
+  expect(html).toMatch(/<a href="\/">[^<]*wall/);
+});

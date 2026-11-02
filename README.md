@@ -41,6 +41,7 @@ These are checked by `pnpm check` against the running app, in `spec/`:
   connection is replayed what it missed, and the "new" badge appears once
 - the tag beside a name is the one the server log leads with, and the log
   can't be forged by a name with a newline in it
+- this page, where a newcomer starts, links to the wall
 
 These are judged, not tested: whether the wall reads well at a phone's
 width and a projector's, and whether a stranger can post without being told
