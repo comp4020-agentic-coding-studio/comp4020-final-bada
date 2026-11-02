@@ -1,125 +1,125 @@
 # Process overview
 
-Crit 8's bar is proof of life: something deployed, doing one real thing for a
-stranger, with a trace that's still there when they come back. Before writing
-any code I read the final project brief's own pointers toward the small web
-and games made for a handful of friends, which led to Robin Sloan's
-home-cooked-app essay and Ink & Switch's malleable-software piece -- both
-cited in README.md, which is the actual first deliverable this week: a stance
-on what good means before a feature list.
+Marks is a shared wall for one small room. Each mark is a name and a short
+line, it's permanent, and it appears on every open page within a second. This
+account covers how I got from the brief to that app, the stack and workflow
+behind it, and the corrections that changed the harness rather than just the
+code.
 
-The app itself, Marks, is a shared noticeboard: a name, a short line, posted
-and visible immediately, still there on return. Two decisions came straight
-out of the README's argument rather than habit. First, no accounts -- a
-random id in a cookie is enough to tell two visitors apart and to mark a
-post as "yours," which is all a room this size needs
-([`5c9221a`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/5c9221ac21c123760282a470fbc8f29222ecf9a5)).
-Second, marks are permanent: no edit, no delete route exists at all, because
-a wall that pretends to be moderatable is a worse promise than one that
-plainly isn't.
+## From the brief to a definition of good
 
-The stack choice was more pragmatic than philosophical: Node 24 strips
-TypeScript's erasable syntax natively, so `src/*.ts` runs straight, no build
-step; and `node:sqlite` is built into the same runtime, so the Fly image
-needs no native addon and no separate database service, just the one file
-Fly already mounts at `/data`. Before ever touching Fly I built the actual
-Dockerfile locally, ran the image, posted a mark, restarted the container,
-and confirmed the mark was still there -- the same guarantee the volume is
-meant to provide, checked directly rather than assumed from reading the
-config.
-
-Before deploying, I opened the running app in a real browser at both marking
-viewports and walked the whole form with the keyboard alone (Tab to the name
-field, to the mark field, to the submit button, Enter to send) rather than
-just reading the markup and assuming it would work.
-
-The corrections after the first deploy came from asking where the app's
-own promises could quietly fail, not from another playtest. A name or mark
-made only of zero-width characters passed `.trim()` and posted a blank
-trace onto a wall whose point is an honest one; a real-browser axe run (the
-build's own checks can't see layout) found the posting form sat outside
-every landmark. The sharpest was a cookie: reading every client-controlled
-value the server decodes before routing, a raw `Cookie: visitor=%` made
-`decodeURIComponent` throw on every request, `GET /` included, and since the
-crash came before any `Set-Cookie` could replace the bad value, that visitor
-would have been locked out until they cleared cookies by hand
-([`257c251`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/257c25121b58818e0b19f6b221230d4ba88c69c8)).
-
-Server-side logging is crit 11's bar, not one of the first two. CLAUDE.md
-says so explicitly, so a later run building ahead of the crit that's open is
-a decision to notice, not a default
+The brief leaves "good" open. The first commit was a bare working wall, but
+the argument came straight after it and changed what the wall was allowed to
+become
 ([`e92e066`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/e92e0663b1770718013c93da0461b4bb1f6d542c)).
+Sloan's home-cooked meal essay and Shirky's *Situated Software* both say the
+same thing: software for a room you could name can lean on the room, and
+doesn't need machinery built for strangers at scale. That ruled out accounts
+from the start. Malleable Software set the standard for the schema: the
+smallest shape that carries the job. The median answer to this brief, a chat
+room with the nouns swapped, is about the conversation happening now. Marks
+is about the trace that stays after everyone has gone, and that one choice
+settled most of the others. Marks are permanent, there's no presence list,
+and a live page must never silently miss a mark.
 
-## Crit 9: all at once
+The final README splits its claims into enforced and judged
+([`0b8224e`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/0b8224e9ff4dd9140954d0b8c541df303c37ce69)),
+and CLAUDE.md now treats that split as a contract. Every enforced claim needs a
+`spec/` check that goes red when the claim breaks
+([`f350f17`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/f350f17b5f979e7d9f14c7ebe549485b1fce6163)).
+Writing the split showed one gap straight away. CLAUDE.md had said "escape
+every piece of user-submitted text" since crit 8, but nothing in `spec/`
+checked it. A test now posts markup as a name and a mark and asserts it comes
+back as text. I removed the escaping, watched the test fail, then restored it
+([`c78e250`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/c78e250989374c07e79a8a3615fb5aa50ad873e6)).
 
-Crit 9 asks for real-time and then for one decision about how the app
-behaves when several people use it at once. The transport took one commit:
-server-sent events, because the server already renders every mark and a
-one-way push is all a wall needs
+## The stack, and what it costs
+
+The server is Node 24 with no framework. It uses `node:http`, `node:sqlite`,
+and TypeScript run directly through Node's type stripping
+([`5c9221a`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/5c9221ac21c123760282a470fbc8f29222ecf9a5)).
+Three things decided this. The brief fixes one small machine and one volume,
+and a SQLite file on that volume is exactly the persistence it describes.
+`node:sqlite` needs no native addon, so the Dockerfile has no build stage and
+no per-platform binary to go wrong. And server-rendered HTML with a form keeps
+the core interaction working with JavaScript off, which CLAUDE.md makes a
+rule. The only runtime dependency is `marked`, which renders the README at
+`/readme/`.
+
+The costs are real. With no framework, things like cookie parsing and
+request-size limits had to be written by hand, and each one hid a bug. A
+malformed cookie locked a visitor out of every page
+([`257c251`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/257c25121b58818e0b19f6b221230d4ba88c69c8)).
+SQLite on a volume also means one machine. That suits a room of a dozen, but
+it rules out scaling out, and ADR 0001 records that as a cost.
+
+For real-time I chose server-sent events over WebSockets
 ([`7c8b591`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/7c8b5910f0c5da9defb37f24a091e93c346eaded)).
-The decision I chose came from the README's promise rather than from the
-brief's list of examples. Marks says a trace is "still there the next time
-you're back," and a live feed quietly breaks that: a tab that drops its
-connection for a redeploy reconnects to future marks only, looks healthy,
-and is wrong. So the SSE id is the mark's own id, a reconnect replays from
-the marks table via `Last-Event-ID`, and a returning visitor sees a "new"
-badge on whatever was left since. The ADR records the options and their
-costs, including presence, the rival a pod is most likely to argue for
-([`daadf2c`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/daadf2cf41d95c6f35366e3544ca0cd5e631f44d)).
+A wall only needs to push, the server already renders each mark as HTML, and
+`EventSource` reconnects by itself and sends `Last-Event-ID`. That last
+point became the design. Each event's id is the mark's own row id, and
+because marks are never edited or deleted, the marks table doubles as the
+replay log. Permanence came from the README's argument, and it then made the
+live layer simpler. Polling would have met the one-second bar too, but it
+gives a reconnect gap nothing to replay from.
 
-The correction that mattered came a run later. I'd tested reconnects by
-killing and restarting the server, which the browser's own retry handles.
-A Fly deploy is a different gap: for a few seconds the proxy answers with a
-502 or 503 instead of a stream, and `EventSource` treats any such answer as
-final and goes `CLOSED` for good. I reproduced it locally by binding a
-two-line 503 stub to the port between kill and restart. The tab then stayed
-dead after the real server came back. `src/live.js` now reopens a closed
-stream itself, with backoff, from the newest mark on the page, and a jsdom
-test against the served page goes red without the fix
+Before the first deploy I built the real Dockerfile, posted a mark, restarted
+the container and checked the mark survived. It was cheaper to test the
+volume's promise directly than to trust `fly.toml`.
+
+## Workflow
+
+Each run follows the same loop. Read the open crit's bar, build the smallest
+thing that meets it, then attack the result from an angle no previous run
+had tried. Run `pnpm check` against a throwaway local server, and deploy only
+when it's green. CLAUDE.md's "build to the crit that's open" rule was there from the first
+README commit, because an agent left alone builds the next crit's feature
+before this one's bar is met. Decisions that affect how
+several people experience the app go into ADRs (`docs/decisions/`), and
+CLAUDE.md requires changing the ADR before changing that behaviour. That
+keeps a later run from quietly reversing one.
+
+The verification techniques are the part of the workflow I'd keep.
+Subagents got only the live URL or only the log, never the source, so they
+couldn't guess at what the code meant. Every new test was checked by
+breaking the code it protects. And the production log on the volume was read
+before the crit, not a local one.
+
+## Corrections that landed in the harness
+
+Three failures changed the harness, not just the code.
+
+First, my reconnect tests killed and restarted the server, which the browser
+recovers from by itself. A Fly deploy is different. For a few seconds the
+proxy answers 502, `EventSource` treats that as final, and the tab stays dead
+while looking healthy. A two-line 503 stub on the port reproduced it. The fix
+reopens a closed stream from the newest mark on the page, and a `spec/live`
+test fails without it
 ([`1d9d157`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/1d9d157ed5275231ac9e2bfa925425e2f0b4145c)).
 
-## Crit 10: fly by instruments
-
-Crit 10 asks the app to tell two people apart, enforce on the server what
-each can see and change, and log well enough that I can narrate a two-person
-session without touching the app. Marks already had a person: a random id
-in a cookie. The work was deciding what that id is for, and making the log
-say it. Every action writes one logfmt line led by `visitor=<tag>`, the first
-six hex digits of a SHA-256 of the id. The tag is stable enough to group one
-person's lines and one-way, so a log on a projector can't be used to take
-over anyone's marks. The same commit refuses hand-set ids like
-`visitor=alice` and answers every `PUT`/`PATCH`/`DELETE` with a 405 that gets
-logged
-([`d01b01c`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/d01b01c13f9d6cf631ff91ec1f9b2b032c64d848)).
-ADR 0002 records the rule and its costs
-([`3e1de0e`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/3e1de0e6baa18b55e77e8635f7662a40aaf5c0e5)).
-
-Most of what came after that came from rehearsing the crit itself. I played a scripted
-two-person session in separate browser profiles, then gave a fresh subagent
-only the server log and asked it to say who did what. Its account was right
-in outline, and it counted one person as two listeners. Chrome's
-back/forward cache keeps a page you leave via a link alive with its
-`EventSource` still open, so the server kept delivering to a hidden page and
-marking those marks as seen. That person's next real visit then badged
-nothing as new. No playtest or spec had caught it, because both only ever looked at the
-page that was showing. The page now closes its stream on `pagehide` and
-catches up from the newest mark on `pageshow`
+Second, for crit 10 I played a two-person session and gave a fresh subagent
+only the server log. It counted one person as two listeners. Chrome's
+back/forward cache was keeping a page alive with its stream still open, so
+marks were being marked seen on a page nobody could see. No playtest had
+caught this, because every playtest only watched the page on screen
 ([`b7c064d`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/b7c064ddf368c54a5ecfe1d93c4868b0cff83173)).
-The same narration showed where the log made the reader work. To tell an
-attempt on someone else's mark from one on your own, it had to cross-reference
-mark ids, and it couldn't say whether the second person saw a post arrive. A
-`post` line now carries `delivered=<n>`, and a refused change carries the
-target mark's `owner=` tag
+The same reading showed where the log made its reader guess, so a post now
+says how many others saw it live and a refused change names whose mark it
+targeted
 ([`e2dce83`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/e2dce83e9e98c74a1ec8044aabe2e54331098d3a)).
-Last, the wall shows each mark's tag beside its name, so two people who
-both type "Ana" are distinguishable there too, and the narrator can point
-from a log line to the mark on screen
-([`3ebd943`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/3ebd943e4b9fb9d373a4c6aee36e182ecc52f7c0)).
-The brief wants the logging to outlast the crit, and `flyctl logs` only
-holds a few hours, so every line is also appended to a file on the volume
-([`5539dd2`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/5539dd2b9c633027bed76cec616d3522189c3dfa)).
-Reading that file before the crit, rather than a local one, showed it was
-almost all an hourly probe arriving as a new visitor each time, which a
-narrator would have read as a stream of strangers. An `arrive` line now
-carries a coarse `agent=` label such as `chrome` or `script`
+
+Third, the production log on the volume
+([`5539dd2`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/5539dd2b9c633027bed76cec616d3522189c3dfa))
+was almost all an hourly probe, each visit arriving as a new person. A
+narrator would have read that as a stream of strangers. Arrivals now carry a
+coarse browser label
 ([`064de47`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-bada/commit/064de479fdd4523d4192855bbc5a8d58ff092481)).
+
+## Where I stand
+
+The writing on small software is easy to agree with and hard to act on. What
+acting on it meant here was mostly refusal. There's no delete, though it's
+the first permission anyone would expect, because it would break both the trace and the replay. And
+there's no presence, though it would make the showcase screen look busier.
+The README's definition is narrow enough that the app either meets it or
+doesn't, and the parts that can be tested are in `spec/`.
