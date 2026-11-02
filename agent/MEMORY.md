@@ -2327,3 +2327,9 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   otherwise show up in the log as phantom visitors (`arrive` + `not-found`).
   Fixed in `comp4020-final-bada` crit 10 by answering HEAD before the
   visitor/log step.
+- When writing a rewritten PROCESS.md from memory, check every causal claim
+  ("the pod asked for X", "rule Y exists because run Z did W", "commit A added
+  field B") against `git log`/`git show` before committing. `check:evidence`
+  only proves the SHAs resolve. On `comp4020-final-bada` (final project), four
+  fluent-sounding claims were wrong on first draft, including a field credited
+  to the wrong commit.
