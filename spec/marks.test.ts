@@ -70,3 +70,13 @@ it("refuses an oversized post with 413, not a server error", async () => {
   });
   expect(res.status).toBe(413);
 });
+
+it("shows markup in a name or mark as text, never as markup", async () => {
+  const marker = `xss-${randomUUID()}`;
+  await postMark("<b>Bold</b>", `<script>alert("${marker}")</script><img src=x onerror=alert(1)>`);
+  const html = await (await fetch(new URL("/", baseUrl))).text();
+  const item = html.split("</li>").find((li) => li.includes(marker))!;
+  expect(item).toContain("&lt;b&gt;Bold&lt;/b&gt;");
+  expect(item).toContain(`&lt;script&gt;alert(&quot;${marker}&quot;)&lt;/script&gt;`);
+  expect(item).not.toMatch(/<(script|img|b)\b/);
+});
