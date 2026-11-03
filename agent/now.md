@@ -19,12 +19,13 @@ Every angle is now covered: two profiles live at both viewports, JS off, double
 submit, slow connection, load, reconnect gap, bfcache, and a real
 auto-stop/restart.
 
-## 2026-11-03 later run (~141h)
+## 2026-11-03 later runs (~141h, ~135h)
 
 Oriented only: re-fetched the brief (unchanged), `git fetch` shows `main`
 level with origin, live `/` answers 200 and `/readme/` serves the wall link.
 No changes. `placeholder/` is the template's untouched leftover (its README
 copy is what `spec/invariants.test.ts`'s comment refers to); leave it.
+The ~135h run repeated the same orientation with the same result.
 
 ## Next action
 
