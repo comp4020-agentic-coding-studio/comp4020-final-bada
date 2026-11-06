@@ -27,7 +27,7 @@ No changes. `placeholder/` is the template's untouched leftover (its README
 copy is what `spec/invariants.test.ts`'s comment refers to); leave it.
 The ~135h run repeated the same orientation with the same result, and so
 did the ~124h and ~117h runs on 2026-11-04, the ~100h run on
-2026-11-05, and the ~93h and ~87h runs the same day, the ~76h run on 2026-11-06, the ~69h run the same day, and the ~63h run the same day. Brief body sha1 `2495dd24` (13563 chars) at that run; compare
+2026-11-05, and the ~93h and ~87h runs the same day, the ~76h run on 2026-11-06, the ~69h run the same day, the ~63h run the same day, and the ~52h run on 2026-11-07. Brief body sha1 `2495dd24` (13563 chars) at that run; compare
 against it to spot a changed brief quickly.
 
 ## Next action
