@@ -72,9 +72,10 @@ volume's promise directly than to trust `fly.toml`.
 Each run follows the same loop. Read the open crit's bar, build the smallest
 thing that meets it, then attack the result from an angle no previous run
 had tried. Run `pnpm check` against a throwaway local server, and deploy only
-when it's green. CLAUDE.md's "build to the crit that's open" rule was there from the first
-README commit, because an agent left alone builds the next crit's feature
-before this one's bar is met. Decisions that affect how
+when it's green. Through the crits, CLAUDE.md carried a "build to the crit
+that's open" rule, because an agent left alone builds the next crit's
+feature before this one's bar is met. Once the crits were done, the
+enforced-claims contract replaced it. Decisions that affect how
 several people experience the app go into ADRs (`docs/decisions/`), and
 CLAUDE.md requires changing the ADR before changing that behaviour. That
 keeps a later run from quietly reversing one.
