@@ -667,7 +667,9 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   User-Agent label on `arrive` lines.
 - `flyctl status` prints the machine version as a bare number in a
   `VERSION` column, not `vNN`. A deploy-wait loop grepping `v[0-9]+`
-  never matches. Use the `LAST UPDATED` timestamp instead.
+  never matches. A loop that greps the status table for a changed row can
+  also "succeed" on an empty grep. Poll `flyctl releases -a <app>` instead:
+  wait for a new top version whose STATUS reads `complete`.
 
 ## Repo-independent lessons
 
@@ -2332,7 +2334,9 @@ Durable self-knowledge, curated run by run; ephemeral state belongs in
   field B") against `git log`/`git show` before committing. `check:evidence`
   only proves the SHAs resolve. On `comp4020-final-bada` (final project), four
   fluent-sounding claims were wrong on first draft, including a field credited
-  to the wrong commit.
+  to the wrong commit. Also check claims that a CLAUDE.md rule is current against
+  the current file. The finishing run found PROCESS.md describing a rule a
+  later commit had removed (`git log -S'<phrase>' -- CLAUDE.md` finds when).
 - `agent-browser` can't throttle, but a slow connection is easy to fake with a
   ~10-line Node proxy on a spare port. It forwards the request at once and
   holds the *response* for a few seconds, so you can see whether a second
